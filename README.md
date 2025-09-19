@@ -36,3 +36,7 @@ MamaChef is a serious game for creating and managing recipes, planning meals, an
 ## PWA Support
 
 This application is a Progressive Web App (PWA) and can be installed on your device for offline use. Look for the "Install" button in the app or your browser's address bar.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
