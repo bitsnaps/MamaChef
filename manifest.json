@@ -1,7 +1,7 @@
 {
   "name": "MamaChef",
   "short_name": "MamaChef",
-  "description": "Jeu sérieux de recettes, planning et bonnes pratiques",
+  "description": "A serious game for recipes, planning, and best practices",
   "start_url": "/index.html",
   "id": "MamaChef",
   "display": "standalone",

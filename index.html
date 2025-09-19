@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MamaChef — Jeu sérieux de recettes, planning et bonnes pratiques</title>
+  <title>MamaChef — Serious game for recipes, planning, and best practices</title>
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -143,7 +143,7 @@
     <nav class="navbar is-white" role="navigation" aria-label="main navigation">
       <div class="container">
         <div class="navbar-brand">
-          <a class="navbar-item" @click="view='accueil'; mobileNav=false">
+          <a class="navbar-item" @click="view='home'; mobileNav=false">
             <span class="icon has-text-danger"><i class="fa-solid fa-utensils"></i></span>
             <strong class="ml-2">MamaChef</strong>
           </a>
@@ -161,23 +161,23 @@
 
         <div class="navbar-menu" :class="{'is-active': mobileNav}">
           <div class="navbar-start">
-            <a class="navbar-item" :class="{'has-text-danger': view==='accueil'}" @click="view='accueil'; mobileNav=false">
-              Accueil
+            <a class="navbar-item" :class="{'has-text-danger': view==='home'}" @click="view='home'; mobileNav=false">
+              Home
             </a>
-            <a class="navbar-item" :class="{'has-text-danger': view==='recettes'}" @click="view='recettes'; mobileNav=false">
-              Recettes
+            <a class="navbar-item" :class="{'has-text-danger': view==='recipes'}" @click="view='recipes'; mobileNav=false">
+              Recipes
             </a>
             <a class="navbar-item" :class="{'has-text-danger': view==='planning'}" @click="view='planning'; mobileNav=false">
               Planning
             </a>
-            <a class="navbar-item" :class="{'has-text-danger': view==='inventaire'}" @click="view='inventaire'; mobileNav=false">
-              Ingrédients
+            <a class="navbar-item" :class="{'has-text-danger': view==='inventory'}" @click="view='inventory'; mobileNav=false">
+              Ingredients
             </a>
-            <a class="navbar-item" :class="{'has-text-danger': view==='conseils'}" @click="view='conseils'; mobileNav=false">
-              Conseils Chefs
+            <a class="navbar-item" :class="{'has-text-danger': view==='tips'}" @click="view='tips'; mobileNav=false">
+              Chef Tips
             </a>
-            <a class="navbar-item" :class="{'has-text-danger': view==='profil'}" @click="view='profil'; mobileNav=false">
-              Profil & Scores
+            <a class="navbar-item" :class="{'has-text-danger': view==='profile'}" @click="view='profile'; mobileNav=false">
+              Profile & Scores
             </a>
           </div>
 
@@ -186,7 +186,7 @@
               <div class="score-badge">
                 <span class="icon has-text-warning"><i class="fa-solid fa-star"></i></span>
                 <span>{{ totalScore }} pts</span>
-                <span class="tag is-danger is-light pill is-small ml-2">Niveau {{ level }}</span>
+                <span class="tag is-danger is-light pill is-small ml-2">Level {{ level }}</span>
               </div>
             </div>
           </div>
@@ -200,33 +200,33 @@
         <div class="container">
           <div class="columns is-vcentered">
             <div class="column">
-              <h1 class="title is-3 mb-2">Recettes Saines & Équilibrées</h1>
+              <h1 class="title is-3 mb-2">Healthy & Balanced Recipes</h1>
               <p class="subtitle has-text-dark">
-                Créez, réviser et planifier vos repas. Gagnez des points, montez de niveau et débloquez des défis culinaires du monde entier.
+                Create, review, and plan your meals. Earn points, level up, and unlock culinary challenges from around the world.
               </p>
 
               <div class="buttons">
-                <button class="button is-dark" @click="view='recettes'">
+                <button class="button is-dark" @click="view='recipes'">
                   <span class="icon"><i class="fa-solid fa-bowl-food"></i></span>
-                  <span>Explorer des recettes</span>
+                  <span>Explore recipes</span>
                 </button>
                 <button class="button is-danger" @click="quickChallenge()">
                   <span class="icon"><i class="fa-solid fa-bolt"></i></span>
-                  <span>Défi éclair</span>
+                  <span>Quick Challenge</span>
                 </button>
                 <button class="button is-light" @click="generateChefTip()">
                   <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span>Astuce d’un Chef</span>
+                  <span>Chef's Tip</span>
                 </button>
               </div>
             </div>
             <div class="column">
               <div class="box">
-                <p class="title is-5 mb-2">Progression</p>
+                <p class="title is-5 mb-2">Progress</p>
                 <progress class="progress is-danger is-thin" :value="progressPercent" max="100">{{ progressPercent }}%</progress>
                 <div class="columns is-variable is-1 mt-3">
                   <div class="column has-text-centered">
-                    <p class="heading">Recettes</p>
+                    <p class="heading">Recipes</p>
                     <p class="title is-6">{{ recipes.length }}</p>
                   </div>
                   <div class="column has-text-centered">
@@ -234,23 +234,23 @@
                     <p class="title is-6">{{ plannedMealsCount }}</p>
                   </div>
                   <div class="column has-text-centered">
-                    <p class="heading">Conseils lus</p>
+                    <p class="heading">Tips read</p>
                     <p class="title is-6">{{ tipsRead }}</p>
                   </div>
                   <div class="column has-text-centered">
-                    <p class="heading">Défis</p>
+                    <p class="heading">Challenges</p>
                     <p class="title is-6">{{ challengesDone }}</p>
                   </div>
                 </div>
                 <p class="small mt-2">
-                  Objectif du niveau suivant: {{ nextLevelTarget }} pts
+                  Next level target: {{ nextLevelTarget }} pts
                 </p>
               </div>
             </div>
           </div>
 
           <div class="notification is-light mt-2 has-text-dark is-hidden-mobile">
-            Astuce: appuyez sur <span class="kbd">R</span> pour générer une recette via l’IA, <span class="kbd">T</span> pour une astuce de Chef, <span class="kbd">D</span> pour un défi.
+            Tip: press <span class="kbd">R</span> to generate a recipe via AI, <span class="kbd">T</span> for a Chef's tip, <span class="kbd">D</span> for a challenge.
           </div>
         </div>
       </div>
@@ -259,16 +259,16 @@
     <!-- MAIN CONTENT -->
     <section class="section pt-5">
       <div class="container">
-        <!-- ACCUEIL -->
-        <div v-show="view==='accueil'">
+        <!-- HOME -->
+        <div v-show="view==='home'">
           <div class="columns is-multiline">
             <div class="column is-12">
               <article class="message is-info">
                 <div class="message-header">
-                  <p>Bienvenue sur MamaChef</p>
+                  <p>Welcome to MamaChef</p>
                 </div>
                 <div class="message-body">
-                  Utilisez le générateur IA pour créer de nouvelles recettes halal équilibrées, gérez vos ingrédients et planifiez vos repas à la semaine. Plus vous cuisinez sainement et planifiez efficacement, plus vous gagnez de points et montez de niveau !
+                  Use the AI generator to create new balanced halal recipes, manage your ingredients, and plan your weekly meals. The more you cook healthily and plan effectively, the more points you earn and the higher you level up!
                 </div>
               </article>
             </div>
@@ -276,7 +276,7 @@
               <div class="card">
                 <header class="card-header">
                   <p class="card-header-title">
-                    Génération IA de recettes
+                    AI Recipe Generation
                   </p>
                 </header>
                 <div class="card-content">
@@ -286,19 +286,19 @@
                       <div class="control is-expanded">
                         <input class="input"
                                v-model="aiPrompt"
-                               placeholder="Ex: Plat principal algérien, poulet, légumes, 600 kcal max, halal" />
+                               placeholder="E.g.: Algerian main course, chicken, vegetables, 600 kcal max, halal" />
                       </div>
                       <div class="control">
                         <button class="button is-danger" :class="{'is-loading': aiLoading}" @click="generateRecipe()">
-                          Générer
+                          Generate
                         </button>
                       </div>
                     </div>
-                    <p class="help">L’IA proposera une recette, avec estimation calorique et étapes. Image générée automatiquement.</p>
+                    <p class="help">The AI will propose a recipe, with calorie estimation and steps. Image generated automatically.</p>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="view='recettes'">Voir toutes les recettes</a>
+                  <a class="card-footer-item" @click="view='recipes'">View all recipes</a>
                 </footer>
               </div>
             </div>
@@ -306,7 +306,7 @@
             <div class="column is-6">
               <div class="card">
                 <header class="card-header">
-                  <p class="card-header-title">Défi du jour</p>
+                  <p class="card-header-title">Challenge of the day</p>
                 </header>
                 <div class="card-content">
                   <div class="content">
@@ -315,25 +315,25 @@
                     <div class="tags mt-2">
                       <span class="tag is-warning is-light">+{{ dailyChallenge.points }} pts</span>
                       <span class="tag tag-halal">Halal</span>
-                      <span class="tag is-success is-light">Sain</span>
+                      <span class="tag is-success is-light">Healthy</span>
                     </div>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="completeDailyChallenge()">Valider</a>
-                  <a class="card-footer-item" @click="quickChallenge()">Nouveau défi</a>
+                  <a class="card-footer-item" @click="completeDailyChallenge()">Validate</a>
+                  <a class="card-footer-item" @click="quickChallenge()">New challenge</a>
                 </footer>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- RECETTES -->
-        <div v-show="view==='recettes'">
+        <!-- RECIPES -->
+        <div v-show="view==='recipes'">
           <div class="level">
             <div class="level-left">
               <div class="level-item">
-                <p class="title is-5 has-text-dark">Recettes</p>
+                <p class="title is-5 has-text-dark">Recipes</p>
               </div>
             </div>
             
@@ -341,14 +341,14 @@
               <div class="level-item">
                 <div class="field has-addons">
                   <p class="control is-expanded">
-                    <input class="input" v-model="searchRecipe" placeholder="Rechercher une recette..." />
+                    <input class="input" v-model="searchRecipe" placeholder="Search for a recipe..." />
                   </p>
                   <p class="control">
                     <span class="select">
                       <select v-model="filterTag">
-                        <option value="">Toutes</option>
-                        <option>Entrée</option>
-                        <option>Plat</option>
+                        <option value="">All</option>
+                        <option>Starter</option>
+                        <option>Main</option>
                         <option>Dessert</option>
                         <option>Snack</option>
                       </select>
@@ -357,7 +357,7 @@
                   <p class="control">
                     <button class="button is-danger" @click="generateRecipe()" :class="{'is-loading': aiLoading}">
                       <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                      <span class="is-hidden-mobile">Nouvelle recette IA</span>
+                      <span class="is-hidden-mobile">New AI Recipe</span>
                     </button>
                   </p>
                 </div>
@@ -367,7 +367,7 @@
 
           <div class="columns is-multiline is-mobile-compact">
             <div class="column is-12" v-if="filteredRecipes.length===0">
-              <div class="notification is-light">Aucune recette pour l’instant. Essayez d’en générer une via l’IA.</div>
+              <div class="notification is-light">No recipes for now. Try generating one using AI.</div>
             </div>
             <div v-for="r in filteredRecipes" :key="r.id" class="column is-12-tablet is-6-desktop">
               <div class="card">
@@ -389,10 +389,10 @@
                       <span class="tag is-link is-light" v-for="t in r.tags" :key="t">{{ t }}</span>
                     </div>
 
-                    <p class="small"><strong>Ingrédients:</strong> {{ r.ingredients.join(', ') }}</p>
+                    <p class="small"><strong>Ingredients:</strong> {{ r.ingredients.join(', ') }}</p>
 
                     <details class="mt-2">
-                      <summary class="pointer">Étapes</summary>
+                      <summary class="pointer">Steps</summary>
                       <ol class="mt-2">
                         <li v-for="(s,idx) in r.steps" :key="idx">{{ s }}</li>
                       </ol>
@@ -408,19 +408,19 @@
                       <div class="column has-text-right">
                         <button class="button is-small is-light" @click="addToPlan(r)">
                           <span class="icon"><i class="fa-solid fa-calendar-plus"></i></span>
-                          <span>Planifier</span>
+                          <span>Plan</span>
                         </button>
                         <button class="button is-small is-light ml-1" @click="cookRecipe(r)">
                           <span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
-                          <span>Cuisiné</span>
+                          <span>Cooked</span>
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="editRecipe(r)">Modifier</a>
-                  <a class="card-footer-item is-danger" @click="deleteRecipe(r)">Supprimer</a>
+                  <a class="card-footer-item" @click="editRecipe(r)">Edit</a>
+                  <a class="card-footer-item is-danger" @click="deleteRecipe(r)">Delete</a>
                 </footer>
               </div>
             </div>
@@ -432,14 +432,14 @@
           <div class="level">
             <div class="level-left">
               <div class="level-item">
-                <p class="title is-5 has-text-dark">Planning des repas (7 jours)</p>
+                <p class="title is-5 has-text-dark">Meal planning (7 days)</p>
               </div>
             </div>
             <div class="level-right">
               <div class="level-item">
                 <button class="button is-light" @click="autoPlan()">
                   <span class="icon"><i class="fa-solid fa-shuffle"></i></span>
-                  <span>Auto-planifier</span>
+                  <span>Auto-plan</span>
                 </button>
               </div>
             </div>
@@ -449,10 +449,10 @@
             <div class="column is-12">
               <article class="message is-light">
                 <div class="message-body">
-                  Objectif calorique par jour:
+                  Daily calorie goal:
                   <input type="number" class="input is-inline-block" style="max-width: 120px"
                          v-model.number="dailyCalorieGoal" @change="saveAll()">
-                  kcal. Ajustez vos plats pour rester dans la plage souhaitée.
+                  kcal. Adjust your meals to stay within the desired range.
                 </div>
               </article>
             </div>
@@ -461,11 +461,11 @@
                 <table class="table is-fullwidth is-striped is-narrow">
                   <thead>
                     <tr>
-                      <th>Jour</th>
-                      <th>Petit-déj.</th>
-                      <th>Déjeuner</th>
-                      <th>Dîner</th>
-                      <th>Calories (estim.)</th>
+                      <th>Day</th>
+                      <th>Breakfast</th>
+                      <th>Lunch</th>
+                      <th>Dinner</th>
+                      <th>Calories (est.)</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -508,14 +508,14 @@
                             <div class="dropdown-trigger">
                               <button class="button is-light" @click="togglePlanner(idx)">
                                 <span class="icon"><i class="fa-solid fa-plus"></i></span>
-                                <span>Ajouter</span>
+                                <span>Add</span>
                               </button>
                             </div>
                             <div class="dropdown-menu">
                               <div class="dropdown-content" style="max-height: 280px; overflow:auto;">
                                 <div class="dropdown-item">
-                                  <p class="small has-text-grey">Choisir une recette</p>
-                                  <input class="input is-small mb-2" v-model="plannerSearch" placeholder="Filtrer..." />
+                                  <p class="small has-text-grey">Choose a recipe</p>
+                                  <input class="input is-small mb-2" v-model="plannerSearch" placeholder="Filter..." />
                                 </div>
                                 <a class="dropdown-item"
                                    v-for="rec in recipesFilteredByPlanner"
@@ -524,13 +524,13 @@
                                   {{ rec.title }} <span class="tag is-light ml-2">{{ (rec.calories||'?') }} kcal</span>
                                 </a>
                                 <hr class="dropdown-divider">
-                                <a class="dropdown-item" @click="openPlannerDropdown=null">Fermer</a>
+                                <a class="dropdown-item" @click="openPlannerDropdown=null">Close</a>
                               </div>
                             </div>
                           </div>
                           <button class="button is-light" @click="clearDay(idx)">
                             <span class="icon"><i class="fa-regular fa-trash-can"></i></span>
-                            <span>Vider</span>
+                            <span>Clear</span>
                           </button>
                         </div>
                       </td>
@@ -538,7 +538,7 @@
                   </tbody>
                   <tfoot>
                     <tr>
-                      <th>Total semaine</th>
+                      <th>Total week</th>
                       <th colspan="3"></th>
                       <th>{{ weekCalories }} kcal</th>
                       <th></th>
@@ -550,18 +550,18 @@
           </div>
         </div>
 
-        <!-- INVENTAIRE -->
-        <div v-show="view==='inventaire'">
+        <!-- INVENTORY -->
+        <div v-show="view==='inventory'">
           <div class="columns">
             <div class="column is-7">
-              <p class="title is-5 has-text-dark">Gestion des ingrédients</p>
+              <p class="title is-5 has-text-dark">Ingredient Management</p>
               <div class="box">
                 <div class="columns">
                   <div class="column">
-                    <input class="input" v-model="newIngredient.name" placeholder="Nom (ex: Poulet)" />
+                    <input class="input" v-model="newIngredient.name" placeholder="Name (e.g., Chicken)" />
                   </div>
                   <div class="column">
-                    <input class="input" v-model="newIngredient.category" placeholder="Catégorie (viande, légume...)" />
+                    <input class="input" v-model="newIngredient.category" placeholder="Category (meat, vegetable...)" />
                   </div>
                 </div>
                 <div class="columns is-mobile">
@@ -570,22 +570,22 @@
                            placeholder="kcal / 100g" />
                   </div>
                   <div class="column is-4">
-                    <input class="input" v-model="newIngredient.unit" placeholder="Unité (g, ml, pièce)" />
+                    <input class="input" v-model="newIngredient.unit" placeholder="Unit (g, ml, piece)" />
                   </div>
                   <div class="column is-4">
-                    <button class="button is-danger is-fullwidth" @click="addIngredient()">Ajouter</button>
+                    <button class="button is-danger is-fullwidth" @click="addIngredient()">Add</button>
                   </div>
                 </div>
               </div>
 
               <div class="field has-addons">
                 <div class="control is-expanded">
-                  <input class="input" v-model="ingredientSearch" placeholder="Rechercher un ingrédient..." />
+                  <input class="input" v-model="ingredientSearch" placeholder="Search for an ingredient..." />
                 </div>
                 <div class="control">
                   <div class="select">
                     <select v-model="ingredientFilter">
-                      <option value="">Toutes catégories</option>
+                      <option value="">All categories</option>
                       <option v-for="c in ingredientCategories" :key="c" :value="c">{{ c }}</option>
                     </select>
                   </div>
@@ -596,10 +596,10 @@
                 <table class="table is-striped is-fullwidth is-narrow">
                   <thead>
                     <tr>
-                      <th>Nom</th>
-                      <th>Catégorie</th>
+                      <th>Name</th>
+                      <th>Category</th>
                       <th>kcal/100g</th>
-                      <th>Unité</th>
+                      <th>Unit</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -624,18 +624,18 @@
 
               <article class="message is-info">
                 <div class="message-body smaller">
-                  Conseil: vous pouvez lier des ingrédients à une recette lors de l’édition de celle-ci pour
-                  estimer plus finement les calories.
+                  Tip: you can link ingredients to a recipe when editing it to
+                  estimate calories more accurately.
                 </div>
               </article>
             </div>
 
             <div class="column is-5">
-              <p class="title is-6 has-text-dark">Panier de courses</p>
+              <p class="title is-6 has-text-dark">Shopping Cart</p>
               <div class="box">
                 <div class="field has-addons">
                   <div class="control is-expanded">
-                    <input class="input" v-model="shoppingItem" placeholder="Ajouter au panier..." />
+                    <input class="input" v-model="shoppingItem" placeholder="Add to cart..." />
                   </div>
                   <div class="control">
                     <button class="button is-light" @click="addToShopping()">
@@ -650,61 +650,61 @@
                       <input type="checkbox" v-model="it.done" @change="saveAll()" />
                       <span :class="{'has-text-grey-light': it.done}" class="ml-2">{{ it.name }}</span>
                     </label>
-                    <button class="button is-very-small is-white ml-2" title="Supprimer" @click="removeShopping(idx)">
+                    <button class="button is-very-small is-white ml-2" title="Delete" @click="removeShopping(idx)">
                       <span class="icon has-text-danger"><i class="fa-regular fa-trash-can"></i></span>
                     </button>
                   </li>
                 </ul>
                 <button class="button is-light is-fullwidth mt-2" @click="shoppingList=[]; saveAll()">
-                  Vider le panier
+                  Empty cart
                 </button>
               </div>
 
-              <p class="title is-6 has-text-dark">Objectifs santé</p>
+              <p class="title is-6 has-text-dark">Health goals</p>
               <div class="box">
-                <label class="label">Préférences</label>
+                <label class="label">Preferences</label>
                 <div class="field">
                   <label class="checkbox">
-                    <input type="checkbox" v-model="prefs.lowSalt" @change="saveAll()"> Pauvre en sel
+                    <input type="checkbox" v-model="prefs.lowSalt" @change="saveAll()"> Low salt
                   </label>
                 </div>
                 <div class="field">
                   <label class="checkbox">
-                    <input type="checkbox" v-model="prefs.lowSugar" @change="saveAll()"> Pauvre en sucre
+                    <input type="checkbox" v-model="prefs.lowSugar" @change="saveAll()"> Low sugar
                   </label>
                 </div>
                 <div class="field">
                   <label class="checkbox">
-                    <input type="checkbox" v-model="prefs.highProtein" @change="saveAll()"> Riche en protéines
+                    <input type="checkbox" v-model="prefs.highProtein" @change="saveAll()"> High protein
                   </label>
                 </div>
               </div>
 
               <article class="message is-success">
                 <div class="message-header">
-                  <p>Halal et sain</p>
+                  <p>Halal and healthy</p>
                 </div>
                 <div class="message-body smaller">
-                  Toutes les recettes générées sont suggérées comme halal par défaut. Vérifiez néanmoins vos ingrédients et labels.
+                  All generated recipes are suggested as halal by default. However, always check your ingredients and labels.
                 </div>
               </article>
             </div>
           </div>
         </div>
 
-        <!-- CONSEILS -->
-        <div v-show="view==='conseils'">
+        <!-- TIPS -->
+        <div v-show="view==='tips'">
           <div class="level">
             <div class="level-left">
               <div class="level-item">
-                <p class="title is-5 has-text-dark">Conseils et bonnes pratiques de Chefs</p>
+                <p class="title is-5 has-text-dark">Chef's tips and best practices</p>
               </div>
             </div>
             <div class="level-right">
               <div class="level-item">
                 <button class="button is-danger" :class="{'is-loading': tipLoading}" @click="generateChefTip()">
                   <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span>Nouvelle astuce IA</span>
+                  <span>New AI tip</span>
                 </button>
               </div>
             </div>
@@ -712,12 +712,12 @@
 
           <div class="columns is-multiline">
             <div class="column is-12" v-if="tips.length===0">
-              <div class="notification is-light">Demandez une astuce pour commencer.</div>
+              <div class="notification is-light">Ask for a tip to get started.</div>
             </div>
             <div class="column is-12" v-for="(tip, idx) in tips" :key="idx">
               <article class="message is-info">
                 <div class="message-header">
-                  <p>Astuce #{{ idx+1 }}</p>
+                  <p>Tip #{{ idx+1 }}</p>
                   <button class="delete" @click="removeTip(idx)"></button>
                 </div>
                 <div class="message-body">
@@ -731,47 +731,47 @@
           </div>
         </div>
 
-        <!-- PROFIL -->
-        <div v-show="view==='profil'">
+        <!-- PROFILE -->
+        <div v-show="view==='profile'">
           <div class="columns">
             <div class="column is-7">
               <div class="card">
                 <header class="card-header">
-                  <p class="card-header-title">Profil & progression</p>
+                  <p class="card-header-title">Profile & progress</p>
                 </header>
                 <div class="card-content">
                   <div class="content">
-                    <p><strong>Nom:</strong> <input class="input is-inline-block" style="max-width: 260px"
-                      v-model="profile.name" @change="saveAll()" placeholder="Votre nom" /></p>
-                    <p><strong>Niveau:</strong> {{ level }}</p>
-                    <p><strong>Score total:</strong> {{ totalScore }} pts</p>
+                    <p><strong>Name:</strong> <input class="input is-inline-block" style="max-width: 260px"
+                      v-model="profile.name" @change="saveAll()" placeholder="Your name" /></p>
+                    <p><strong>Level:</strong> {{ level }}</p>
+                    <p><strong>Total score:</strong> {{ totalScore }} pts</p>
                     <progress class="progress is-danger" :value="progressPercent" max="100">{{ progressPercent }}%</progress>
 
                     <div class="columns">
                       <div class="column">
-                        <p class="heading">Recettes cuisinées</p>
+                        <p class="heading">Recipes cooked</p>
                         <p class="title is-5">{{ stats.cooked }}</p>
                       </div>
                       <div class="column">
-                        <p class="heading">Planning rempli</p>
+                        <p class="heading">Planning filled</p>
                         <p class="title is-5">{{ plannedMealsCount }}</p>
                       </div>
                       <div class="column">
-                        <p class="heading">Défis effectués</p>
+                        <p class="heading">Challenges completed</p>
                         <p class="title is-5">{{ challengesDone }}</p>
                       </div>
                     </div>
 
-                    <p class="small">Débloquez des badges en réussissant des défis et en respectant vos objectifs caloriques.</p>
+                    <p class="small">Unlock badges by completing challenges and meeting your calorie goals.</p>
                     <div class="tags mt-2">
                       <span class="tag is-warning is-light" v-for="b in badges" :key="b">{{ b }}</span>
                     </div>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="exportData()">Exporter les données</a>
-                  <a class="card-footer-item" @click="importDialogOpen=true">Importer</a>
-                  <a class="card-footer-item is-danger" @click="clearAll()">Effacer toutes les données</a>
+                  <a class="card-footer-item" @click="exportData()">Export data</a>
+                  <a class="card-footer-item" @click="importDialogOpen=true">Import</a>
+                  <a class="card-footer-item is-danger" @click="clearAll()">Clear all data</a>
                 </footer>
               </div>
             </div>
@@ -779,25 +779,25 @@
             <div class="column is-5">
               <div class="card is-hidden-mobile">
                 <header class="card-header">
-                  <p class="card-header-title">Raccourcis</p>
+                  <p class="card-header-title">Shortcuts</p>
                 </header>
                 <div class="card-content">
                   <ul>
-                    <li><span class="kbd">R</span> Générer une recette IA</li>
-                    <li><span class="kbd">T</span> Générer une astuce IA</li>
-                    <li><span class="kbd">D</span> Défi éclair</li>
+                    <li><span class="kbd">R</span> Generate an AI recipe</li>
+                    <li><span class="kbd">T</span> Generate an AI tip</li>
+                    <li><span class="kbd">D</span> Quick challenge</li>
                   </ul>
                 </div>
               </div>
 
               <div class="card mt-4">
                 <header class="card-header">
-                  <p class="card-header-title">Paramètres</p>
+                  <p class="card-header-title">Settings</p>
                 </header>
                 <div class="card-content">
                   <button class="button is-link is-light" @click="installPwa()">
                     <span class="icon"><i class="fa-solid fa-download"></i></span>
-                    <span>Installer l'application</span>
+                    <span>Install the application</span>
                   </button>
                   <p class="small has-text-grey mt-2">{{ pwaStatus }}</p>
                 </div>
@@ -805,11 +805,11 @@
 
               <div class="card mt-4">
                 <header class="card-header">
-                  <p class="card-header-title">À propos</p>
+                  <p class="card-header-title">About</p>
                 </header>
                 <div class="card-content">
                   <p class="small">
-                    Ce jeu sérieux utilise des services d’IA publics pour générer du texte et des images. Les contenus sont des suggestions et doivent être adaptés à vos besoins nutritionnels et convictions.
+                    This serious game uses public AI services to generate text and images. The contents are suggestions and should be adapted to your nutritional needs and beliefs.
                   </p>
                 </div>
               </div>
@@ -829,23 +829,23 @@
               <p class="control">
                 <a class="button is-danger" @click="generateRecipe()" :class="{'is-loading': aiLoading}">
                   <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                  <span class="is-hidden-mobile">Recette IA</span>
+                  <span class="is-hidden-mobile">AI Recipe</span>
                 </a>
               </p>
               <p class="control">
                 <a class="button is-dark" @click="generateChefTip()" :class="{'is-loading': tipLoading}">
                   <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span class="is-hidden-mobile">Astuce IA</span>
+                  <span class="is-hidden-mobile">AI Tip</span>
                 </a>
               </p>
               <p class="control">
                 <a class="button" @click="quickChallenge()">
                   <span class="icon"><i class="fa-solid fa-bolt"></i></span>
-                  <span class="is-hidden-mobile">Défi</span>
+                  <span class="is-hidden-mobile">Challenge</span>
                 </a>
               </p>
               <p class="control is-expanded">
-                <input class="input" v-model="aiPrompt" placeholder="Prompt IA (ex: couscous léger 500 kcal, halal)" />
+                <input class="input" v-model="aiPrompt" placeholder="AI Prompt (e.g., light couscous 500 kcal, halal)" />
               </p>
             </div>
           </div>
@@ -854,7 +854,7 @@
               <span class="icon has-text-danger"><i class="fa-solid fa-star"></i></span>
               <span>{{ totalScore }} pts</span>
             </span>
-            <span class="tag is-danger is-light pill ml-2">Niveau {{ level }}</span>
+            <span class="tag is-danger is-light pill ml-2">Level {{ level }}</span>
           </div>
         </div>
       </div>
@@ -867,7 +867,7 @@
       <div class="modal-background" @click="editRecipeModal=false"></div>
       <div class="modal-card" style="width: 920px; max-width: 95vw;">
         <header class="modal-card-head">
-          <p class="modal-card-title">Éditer la recette</p>
+          <p class="modal-card-title">Edit Recipe</p>
           <button class="delete" aria-label="close" @click="editRecipeModal=false"></button>
         </header>
         <section class="modal-card-body">
@@ -875,35 +875,35 @@
             <div class="columns">
               <div class="column is-7">
                 <div class="field">
-                  <label class="label">Titre</label>
+                  <label class="label">Title</label>
                   <input class="input" v-model="editingRecipe.title" />
                 </div>
                 <div class="field">
                   <label class="label">Tags</label>
-                  <input class="input" v-model="tagsBuffer" placeholder="Séparés par des virgules (ex: Plat, Maghreb)" />
+                  <input class="input" v-model="tagsBuffer" placeholder="Separated by commas (e.g., Main, Maghreb)" />
                 </div>
                 <div class="field">
-                  <label class="label">Calories (estimées)</label>
+                  <label class="label">Calories (estimated)</label>
                   <input class="input" type="number" v-model.number="editingRecipe.calories" />
                 </div>
                 <div class="field">
-                  <label class="label">Étapes (une par ligne)</label>
+                  <label class="label">Steps (one per line)</label>
                   <textarea class="textarea" rows="6" v-model="stepsBuffer"></textarea>
                 </div>
               </div>
               <div class="column is-5">
                 <div class="field">
-                  <label class="label">Ingrédients (un par ligne)</label>
+                  <label class="label">Ingredients (one per line)</label>
                   <textarea class="textarea" rows="6" v-model="ingredientsBuffer"></textarea>
                 </div>
                 <div class="field">
-                  <label class="label">Image (générée automatiquement, peut être régénérée)</label>
+                  <label class="label">Image (auto-generated, can be regenerated)</label>
                   <figure class="image is-16by9 recipe-img" v-if="editingRecipe.imageUrl">
                     <img :src="editingRecipe.imageUrl" :alt="editingRecipe.title" />
                   </figure>
                   <button class="button is-light mt-2" @click="regenImageFor(editingRecipe)">
                     <span class="icon"><i class="fa-solid fa-image"></i></span>
-                    <span>Régénérer l’image</span>
+                    <span>Regenerate image</span>
                   </button>
                 </div>
               </div>
@@ -911,8 +911,8 @@
           </div>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-danger" @click="saveEditingRecipe()">Enregistrer</button>
-          <button class="button" @click="editRecipeModal=false">Fermer</button>
+          <button class="button is-danger" @click="saveEditingRecipe()">Save</button>
+          <button class="button" @click="editRecipeModal=false">Close</button>
         </footer>
       </div>
     </div>
@@ -922,16 +922,16 @@
       <div class="modal-background" @click="importDialogOpen=false"></div>
       <div class="modal-card" style="width: 760px; max-width: 95vw;">
         <header class="modal-card-head">
-          <p class="modal-card-title">Importer des données</p>
+          <p class="modal-card-title">Import data</p>
           <button class="delete" aria-label="close" @click="importDialogOpen=false"></button>
         </header>
         <section class="modal-card-body">
-          <p class="small">Collez ici les données exportées précédemment.</p>
+          <p class="small">Paste the previously exported data here.</p>
           <textarea class="textarea" rows="10" v-model="importBuffer" placeholder='{"recipes":[...], ...}'></textarea>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-danger" @click="performImport()">Importer</button>
-          <button class="button" @click="importDialogOpen=false">Annuler</button>
+          <button class="button is-danger" @click="performImport()">Import</button>
+          <button class="button" @click="importDialogOpen=false">Cancel</button>
         </footer>
       </div>
     </div>
@@ -939,18 +939,18 @@
   </div>
 
   <script>
-    // Utilitaires pour Pollinations API
-    // Text: on utilisera une requête GET simple vers text endpoint si disponible,
-    // sinon fallback à un prompt plus simple. Lien pris du contexte: https://text.pollinations.ai/...
-    // Images: https://image.pollinations.ai/prompt/<prompt encodé>
+    // Utilities for Pollinations API
+    // Text: we will use a simple GET request to the text endpoint if available,
+    // otherwise fallback to a simpler prompt. Link taken from context: https://text.pollinations.ai/...
+    // Images: https://image.pollinations.ai/prompt/<encoded prompt>
     const Pollinations = {
       imageUrl(prompt, width=1024, height=768, seed = -1, model='turbo'){
           return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(model)}&nologo=true`;
         },
-      // Texte: on utilise un endpoint simple. Si indisponible, on fera un fallback local.
+      // Text: we use a simple endpoint. If unavailable, we will fallback locally.
       textUrl(prompt) {
-        // API publique simple (peut changer). Nous passons par un endpoint textuel.
-        // Pour une meilleure compat, on encode le prompt dans l'URL.
+        // Simple public API (may change). We go through a text endpoint.
+        // For better compatibility, we encode the prompt in the URL.
         return `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
       },
       async fetchText(prompt, timeoutMs = 20000) {
@@ -960,12 +960,12 @@
           const res = await fetch(this.textUrl(prompt), { signal: controller.signal });
           clearTimeout(t);
           if (!res.ok) throw new Error('HTTP ' + res.status);
-          // Certains endpoints renvoient du texte brut
+          // Some endpoints return raw text
           const txt = await res.text();
           return txt;
         } catch (e) {
           clearTimeout(t);
-          // Fallback: message générique
+          // Fallback: generic message
           return null;
         }
       }
@@ -975,14 +975,14 @@
       data() {
         return {
           mobileNav: false,
-          view: 'accueil',
+          view: 'home',
 
-          // IA
+          // AI
           aiPrompt: '',
           aiLoading: false,
           tipLoading: false,
 
-          // Recettes
+          // Recipes
           recipes: [],
           searchRecipe: '',
           filterTag: '',
@@ -993,13 +993,13 @@
           tagsBuffer: '',
 
           // Planning
-          weekDays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+          weekDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
           planning: Array.from({length: 7}, () => ({ breakfast: null, lunch: null, dinner: null })),
           dailyCalorieGoal: 1800,
           openPlannerDropdown: null,
           plannerSearch: '',
 
-          // Ingrédients
+          // Ingredients
           ingredients: [],
           newIngredient: { name: '', category: '', kcal: 0, unit: '' },
           ingredientSearch: '',
@@ -1007,15 +1007,15 @@
           shoppingList: [],
           shoppingItem: '',
 
-          // Conseils (tips)
+          // Tips
           tips: [],
           tipsRead: 0,
 
-          // Défis
-          dailyChallenge: { title: 'Cuisiner un plat de saison', desc: 'Utilisez au moins 2 légumes de saison.', points: 20 },
+          // Challenges
+          dailyChallenge: { title: 'Cook a seasonal dish', desc: 'Use at least 2 seasonal vegetables.', points: 20 },
           challengesDone: 0,
 
-          // Profil & progression
+          // Profile & progress
           profile: { name: '' },
           totalScore: 0,
           stats: { cooked: 0 },
@@ -1068,7 +1068,7 @@
           return isNaN(val) ? 0 : val;
         },
         level() {
-          // Courbe de progression simple: 0-99 pts L1, 100-249 L2, 250-449 L3, 450-699 L4, ...
+          // Simple progression curve: 0-99 pts L1, 100-249 L2, 250-449 L3, 450-699 L4, ...
           const s = this.totalScore;
           if (s < 100) return 1;
           if (s < 250) return 2;
@@ -1104,9 +1104,9 @@
       },
       watch: {
         view(v) {
-          // Bonus navigation
+          // Navigation bonus
           if (v === 'planning') this.addScore(2);
-          if (v === 'inventaire') this.addScore(1);
+          if (v === 'inventory') this.addScore(1);
         }
       },
       methods: {
@@ -1137,7 +1137,7 @@
               this[k] = data[k];
             }
           } catch(e) {
-            console.warn('Données corrompues, réinitialisation.');
+            console.warn('Corrupted data, resetting.');
           }
         },
         exportData() {
@@ -1158,18 +1158,18 @@
             localStorage.setItem('mamachef:data', JSON.stringify(obj));
             this.loadAll();
             this.importDialogOpen = false;
-            this.notify('Import réalisé avec succès.', 'is-success');
+            this.notify('Import successful.', 'is-success');
           } catch(e) {
-            this.notify('Import invalide.', 'is-danger');
+            this.notify('Invalid import.', 'is-danger');
           }
         },
         clearAll() {
-          if (!confirm('Effacer toutes les données locales et recommencer ?')) return;
+          if (!confirm('Clear all local data and start over?')) return;
           localStorage.removeItem('mamachef:data');
           location.reload();
         },
 
-        // NOTIFY simple
+        // SIMPLE NOTIFY
         notify(msg, type='is-info', timeout=2000) {
           const n = document.createElement('div');
           n.className = `notification ${type}`;
@@ -1190,62 +1190,62 @@
         },
         checkBadges() {
           const push = (b) => { if (!this.badges.includes(b)) this.badges.push(b); };
-          if (this.stats.cooked >= 1) push('Première recette');
-          if (this.plannedMealsCount >= 7) push('Semaine complète');
-          if (this.tipsRead >= 3) push('Apprenti Chef');
-          if (this.totalScore >= 250) push('Motivé');
+          if (this.stats.cooked >= 1) push('First recipe');
+          if (this.plannedMealsCount >= 7) push('Full week');
+          if (this.tipsRead >= 3) push('Apprentice Chef');
+          if (this.totalScore >= 250) push('Motivated');
           this.saveAll();
         },
 
-        // RECETTES
+        // RECIPES
         async generateRecipe() {
           try {
             this.aiLoading = true;
             const basePrompt = this.aiPrompt && this.aiPrompt.trim() ? this.aiPrompt.trim() :
-              "Propose une recette halal équilibrée en français pour un foyer, 500 à 700 kcal par portion, "
-              +"avec titre, liste d’ingrédients, étapes claires (4 à 8), tags (Entrée/Plat/Dessert/Snack), "
-              +"et estimation calorique. Style concis.";
-            const promptText = `Génère une recette structurée au format JSON compact: { "title": "", "ingredients": ["..."], "steps": ["..."], "tags": ["Plat"], "calories": 600 }.\nExclusivement du JSON.\nContrainte halal et saine.\nDemande: ${basePrompt}`;
+              "Suggest a balanced halal recipe in English for a household, 500 to 700 kcal per serving, "
+              +"with title, list of ingredients, clear steps (4 to 8), tags (Starter/Main/Dessert/Snack), "
+              +"and calorie estimation. Concise style.";
+            const promptText = `Generate a structured recipe in compact JSON format: { "title": "", "ingredients": ["..."], "steps": ["..."], "tags": ["Main"], "calories": 600 }.\nExclusively JSON.\nHalal and healthy constraint.\nRequest: ${basePrompt}`;
             const txt = await Pollinations.fetchText(promptText);
             let parsed = null;
             if (txt) {
-              // Essayer d'extraire du JSON si l'IA renvoie du texte additionnel
+              // Try to extract JSON if the AI returns additional text
               const match = txt.match(/\{[\s\S]*\}/);
               if (match) {
                 try { parsed = JSON.parse(match[0]); } catch(e) { parsed = null; }
               }
             }
             if (!parsed) {
-              // Fallback local
+              // Local fallback
               parsed = {
-                title: 'Salade de poulet grillé aux herbes',
-                ingredients: ['Poulet', 'Salade verte', 'Tomates', 'Concombre', 'Citron', 'Huile d’olive', 'Herbes', 'Sel'],
-                steps: ['Griller le poulet', 'Couper les légumes', 'Mélanger et assaisonner', 'Servir frais'],
-                tags: ['Plat'],
+                title: 'Grilled chicken salad with herbs',
+                ingredients: ['Chicken', 'Green salad', 'Tomatoes', 'Cucumber', 'Lemon', 'Olive oil', 'Herbs', 'Salt'],
+                steps: ['Grill the chicken', 'Cut the vegetables', 'Mix and season', 'Serve fresh'],
+                tags: ['Main'],
                 calories: 620
               };
             }
             const recipe = {
               id: 'r_' + Date.now(),
-              title: parsed.title || 'Recette halal',
+              title: parsed.title || 'Halal recipe',
               ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [],
               steps: Array.isArray(parsed.steps) ? parsed.steps : [],
-              tags: Array.isArray(parsed.tags) ? parsed.tags : ['Plat'],
+              tags: Array.isArray(parsed.tags) ? parsed.tags : ['Main'],
               calories: typeof parsed.calories === 'number' ? parsed.calories : null,
               imageUrl: ''
             };
-            // Générer image
-            const imgPrompt = `Photo culinaire appétissante, ${recipe.title}, présentation chef, halal, style magazine, éclairage naturel`;
+            // Generate image
+            const imgPrompt = `Appetizing culinary photo, ${recipe.title}, chef presentation, halal, magazine style, natural lighting`;
             recipe.imageUrl = Pollinations.imageUrl(imgPrompt, 960, 540);
 
             this.recipes.unshift(recipe);
-            this.addScore(10); // création recette
+            this.addScore(10); // recipe creation
             this.saveAll();
-            this.view = 'recettes';
-            this.notify('Recette générée !', 'is-success');
+            this.view = 'recipes';
+            this.notify('Recipe generated!', 'is-success');
           } catch(e) {
             console.error(e);
-            this.notify("Impossible de générer la recette maintenant.", 'is-danger');
+            this.notify("Could not generate the recipe right now.", 'is-danger');
           } finally {
             this.aiLoading = false;
           }
@@ -1269,16 +1269,16 @@
           this.editRecipeModal = false;
           this.editingRecipe = null;
           this.saveAll();
-          this.notify('Recette mise à jour.', 'is-success');
+          this.notify('Recipe updated.', 'is-success');
         },
         deleteRecipe(r) {
-          if (!confirm('Supprimer cette recette ?')) return;
+          if (!confirm('Delete this recipe?')) return;
           this.recipes = this.recipes.filter(x => x.id !== r.id);
           this.saveAll();
         },
         async regenImageFor(r) {
           if (!r) return;
-          const imgPrompt = `Photo culinaire appétissante, ${r.title}, présentation chef, halal, style magazine, éclairage naturel`;
+          const imgPrompt = `Appetizing culinary photo, ${r.title}, chef presentation, halal, magazine style, natural lighting`;
           r.imageUrl = Pollinations.imageUrl(imgPrompt, 960, 540, Math.floor(Math.random()*999999));
           if (this.editingRecipe && this.editingRecipe.id === r.id) {
             this.editingRecipe.imageUrl = r.imageUrl;
@@ -1291,7 +1291,7 @@
           this.stats.cooked++;
           this.addScore(8);
           this.saveAll();
-          this.notify('Bravo ! Recette cuisinée. +8 pts', 'is-success');
+          this.notify('Well done! Recipe cooked. +8 pts', 'is-success');
         },
 
         // PLANNING
@@ -1299,7 +1299,7 @@
           this.openPlannerDropdown = this.openPlannerDropdown === idx ? null : idx;
         },
         assignToDay(idx, rec) {
-          // Choix intelligent: remplir repas suivant vide
+          // Smart choice: fill the next empty meal
           const slots = ['breakfast','lunch','dinner'];
           const day = this.planning[idx];
           const slot = slots.find(k => !day[k]) || 'lunch';
@@ -1325,7 +1325,7 @@
         },
         autoPlan() {
           if (this.recipes.length === 0) {
-            this.notify('Aucune recette disponible.', 'is-warning');
+            this.notify('No recipes available.', 'is-warning');
             return;
           }
           const pick = () => this.recipes[Math.floor(Math.random()*this.recipes.length)];
@@ -1338,10 +1338,10 @@
           }
           this.addScore(5);
           this.saveAll();
-          this.notify('Planning auto-généré !', 'is-success');
+          this.notify('Auto-generated planning!', 'is-success');
         },
         addToPlan(r) {
-          // Ajoute au premier jour/slot libre
+          // Adds to the first free day/slot
           for (let i=0;i<7;i++) {
             const slots = ['breakfast','lunch','dinner'];
             const free = slots.find(k => !this.planning[i][k]);
@@ -1349,11 +1349,11 @@
               this.planning[i][free] = { id: r.id, title: r.title, calories: r.calories||0 };
               this.addScore(2);
               this.saveAll();
-              this.notify(`Ajouté au ${this.weekDays[i]} (${free}).`, 'is-success');
+              this.notify(`Added to ${this.weekDays[i]} (${free}).`, 'is-success');
               return;
             }
           }
-          this.notify('Aucun créneau libre. Ouvrez le planning pour ajuster.', 'is-warning');
+          this.notify('No free slots. Open the planning to adjust.', 'is-warning');
         },
 
         // INGREDIENTS
@@ -1363,7 +1363,7 @@
           this.ingredients.push({
             id: 'i_' + Date.now() + '_' + Math.floor(Math.random()*9999),
             name: n.name.trim(),
-            category: n.category.trim() || 'Autre',
+            category: n.category.trim() || 'Other',
             kcal: Number(n.kcal)||0,
             unit: n.unit.trim() || 'g'
           });
@@ -1372,13 +1372,13 @@
           this.saveAll();
         },
         editIngredient(ing) {
-          const name = prompt('Nom:', ing.name);
+          const name = prompt('Name:', ing.name);
           if (name===null) return;
-          const category = prompt('Catégorie:', ing.category);
+          const category = prompt('Category:', ing.category);
           if (category===null) return;
           const kcal = prompt('kcal/100g:', ing.kcal);
           if (kcal===null) return;
-          const unit = prompt('Unité:', ing.unit);
+          const unit = prompt('Unit:', ing.unit);
           if (unit===null) return;
           ing.name = name.trim();
           ing.category = category.trim();
@@ -1387,7 +1387,7 @@
           this.saveAll();
         },
         deleteIngredient(ing) {
-          if (!confirm('Supprimer cet ingrédient ?')) return;
+          if (!confirm('Delete this ingredient?')) return;
           this.ingredients = this.ingredients.filter(x => x.id !== ing.id);
           this.saveAll();
         },
@@ -1403,21 +1403,21 @@
           this.saveAll();
         },
 
-        // CONSEILS
+        // TIPS
         async generateChefTip() {
           try {
             this.tipLoading = true;
             
             const prefText = [
-              this.prefs.lowSalt ? 'pauvre en sel' : null,
-              this.prefs.lowSugar ? 'pauvre en sucre' : null,
-              this.prefs.highProtein ? 'riche en protéines' : null
-            ].filter(Boolean).join(', ') || 'équilibré';
+              this.prefs.lowSalt ? 'low in salt' : null,
+              this.prefs.lowSugar ? 'low in sugar' : null,
+              this.prefs.highProtein ? 'high in protein' : null
+            ].filter(Boolean).join(', ') || 'balanced';
 
-            let prompt = `Donne une nouvelle astuce de Chef en français (${parseInt((1+Math.random())*2)}-${parseInt((1+Math.random())*3)} phrases) sur la cuisine ${prefText}. Ajoute 3 tags pertinents. Réponse en JSON: {"text":"...", "tags":["...","...","..."]}.`;
+            let prompt = `Give a new Chef's tip in English (${parseInt((1+Math.random())*2)}-${parseInt((1+Math.random())*3)} sentences) on ${prefText} cooking. Add 3 relevant tags. Response in JSON: {"text":"...", "tags":["...","...","..."]}.`;
             if (this.recipes.length){
                 const randomRecipe = this.recipes[Math.floor(Math.random() * this.recipes.length)];
-                prompt += ` Recette: "${randomRecipe.title}". Ingredients [${randomRecipe.ingredients.join(', ')}].`;
+                prompt += ` Recipe: "${randomRecipe.title}". Ingredients [${randomRecipe.ingredients.join(', ')}].`;
             }
             const txt = await Pollinations.fetchText(prompt);
             let tip = null;
@@ -1428,16 +1428,16 @@
               }
             }
             if (!tip) {
-              tip = { text: "Préparez vos marinades à l’avance avec des épices douces et citron pour sublimer les viandes halal. Limitez le sel et compensez avec des herbes fraîches et des agrumes.", tags: ['Halal','Marinade','Santé'] };
+              tip = { text: "Prepare your marinades in advance with mild spices and lemon to enhance halal meats. Limit salt and compensate with fresh herbs and citrus fruits.", tags: ['Halal','Marinade','Health'] };
             }
             this.tips.unshift(tip);
             this.tipsRead++;
             this.addScore(4);
             this.saveAll();
-            this.notify('Astuce ajoutée !', 'is-success');
+            this.notify('Tip added!', 'is-success');
           } catch(e) {
             console.error(e);
-            this.notify("Impossible d’obtenir une astuce maintenant.", 'is-danger');
+            this.notify("Could not get a tip right now.", 'is-danger');
           } finally {
             this.tipLoading = false;
           }
@@ -1447,27 +1447,27 @@
           this.saveAll();
         },
 
-        // DEFIS
+        // CHALLENGES
         quickChallenge() {
           const challenges = [
-            { title: 'Menu 600 kcal', desc: 'Composez un déjeuner autour de 600 kcal ±100.', points: 15 },
-            { title: 'Zéro gaspillage', desc: 'Cuisinez en réutilisant un reste du frigo.', points: 12 },
-            { title: 'Vert & Protéiné', desc: 'Incluez 2 légumes verts et une source de protéines.', points: 18 },
-            { title: 'Hydratation', desc: 'Servez 2 verres d’eau avec chaque repas de la journée.', points: 8 },
-            { title: 'Batch cooking', desc: 'Planifiez et préparez 2 repas à l’avance.', points: 20 },
+            { title: '600 kcal menu', desc: 'Compose a lunch of around 600 kcal ±100.', points: 15 },
+            { title: 'Zero waste', desc: 'Cook by reusing a leftover from the fridge.', points: 12 },
+            { title: 'Green & Protein', desc: 'Include 2 green vegetables and a source of protein.', points: 18 },
+            { title: 'Hydration', desc: 'Serve 2 glasses of water with each meal of the day.', points: 8 },
+            { title: 'Batch cooking', desc: 'Plan and prepare 2 meals in advance.', points: 20 },
           ];
           this.dailyChallenge = challenges[Math.floor(Math.random()*challenges.length)];
-          this.view = 'accueil';
-          this.notify('Nouveau défi disponible !', 'is-info');
+          this.view = 'home';
+          this.notify('New challenge available!', 'is-info');
         },
         completeDailyChallenge() {
           this.addScore(this.dailyChallenge.points);
           this.challengesDone++;
           this.saveAll();
-          this.notify(`Défi validé ! +${this.dailyChallenge.points} pts`, 'is-success');
+          this.notify(`Challenge validated! +${this.dailyChallenge.points} pts`, 'is-success');
         },
 
-        // DIVERS
+        // MISC
         handleHotkeys(e) {
           if (e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
           if (e.key.toLowerCase() === 'r') this.generateRecipe();
@@ -1481,19 +1481,19 @@
             this.deferredPrompt.prompt();
             const { outcome } = await this.deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-              this.pwaStatus = 'Installation acceptée. L\'application va s\'installer.';
-              this.notify('Application installée !', 'is-success');
+              this.pwaStatus = 'Installation accepted. The application will be installed.';
+              this.notify('Application installed!', 'is-success');
             } else {
-              this.pwaStatus = 'Installation annulée.';
+              this.pwaStatus = 'Installation canceled.';
             }
             this.deferredPrompt = null;
           } else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            this.pwaStatus = 'L\'application est déjà installée.';
+            this.pwaStatus = 'The application is already installed.';
             this.notify(this.pwaStatus, 'is-info');
           }
           else {
-            this.pwaStatus = 'Le navigateur ne supporte pas l\'installation ou l\'événement n\'a pas encore été reçu. Réessayez dans quelques instants.';
-            this.notify('L\'application n\'est pas installable pour le moment.', 'is-warning');
+            this.pwaStatus = 'The browser does not support installation or the event has not yet been received. Try again in a few moments.';
+            this.notify('The application is not installable at the moment.', 'is-warning');
           }
         }
       },
@@ -1501,37 +1501,37 @@
         // PWA Install Prompt
         if ('serviceWorker' in navigator) {
           window.addEventListener('beforeinstallprompt', (e) => {
-            // e.preventDefault(); // Ne pas empêcher le prompt natif, mais garder une référence
+            // e.preventDefault(); // Do not prevent the native prompt, but keep a reference
             this.deferredPrompt = e;
-            this.pwaStatus = 'Prêt pour l\'installation hors-ligne. Si vous refusez, vous pourrez le faire plus tard via le bouton.';
+            this.pwaStatus = 'Ready for offline installation. If you decline, you can do it later via the button.';
           });
 
           if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            this.pwaStatus = 'L\'application est lancée en mode autonome (installée).';
+            this.pwaStatus = 'The application is launched in standalone mode (installed).';
           } else {
-            this.pwaStatus = 'L\'application peut être installée pour un accès hors-ligne.';
+            this.pwaStatus = 'The application can be installed for offline access.';
           }
         } else {
-          this.pwaStatus = 'Service Worker non supporté, l\'installation hors-ligne est impossible.';
+          this.pwaStatus = 'Service Worker not supported, offline installation is impossible.';
         }
 
-        // Prefs santé
+        // Health prefs
         this.prefs = { lowSalt: false, lowSugar: false, highProtein: false };
 
-        // Charger données
+        // Load data
         this.loadAll();
 
-        // Init valeurs par défaut si vide
+        // Init default values if empty
         if (!this.recipes.length) {
-          // Une recette de départ
+          // A starter recipe
           const starter = {
             id: 'r_seed',
-            title: 'Couscous de légumes léger',
-            ingredients: ['Semoule', 'Carottes', 'Courgettes', 'Pois chiches', 'Tomates', 'Oignons', 'Epices (ras el hanout)', 'Huile d’olive', 'Sel'],
-            steps: ['Cuire la semoule à la vapeur','Préparer le bouillon épicé','Cuire les légumes','Assembler et servir'],
-            tags: ['Plat','Maghreb'],
+            title: 'Light vegetable couscous',
+            ingredients: ['Semolina', 'Carrots', 'Zucchini', 'Chickpeas', 'Tomatoes', 'Onions', 'Spices (ras el hanout)', 'Olive oil', 'Salt'],
+            steps: ['Steam the semolina','Prepare the spicy broth','Cook the vegetables','Assemble and serve'],
+            tags: ['Main','Maghreb'],
             calories: 650,
-            imageUrl: Pollinations.imageUrl('Photo couscous de légumes, halal, sain, style magazine, éclairage naturel', 960, 540)
+            imageUrl: Pollinations.imageUrl('Photo couscous with vegetables, halal, healthy, magazine style, natural lighting', 960, 540)
           };
           this.recipes.push(starter);
         }
