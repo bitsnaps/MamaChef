@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MamaChef — Jeu sérieux de recettes, planning et bonnes pratiques</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff3860">
+  
+  <!-- ios support -->
+  <link rel="apple-touch-icon" href="/images/icon-180x180.png">
+  <link rel="apple-touch-icon" href="/images/icon-96x96.png">
+  <meta name="apple-mobile-web-app-status-bar" content="#ff3860">
+  <meta name="theme-color" content="#ff3860">    
+
+  <!-- Bulma v1 (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css" />
+
+  <!-- Vue 3 (CDN) -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <!-- Font Awesome (ICONS) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    :root {
+      --brand: #ff3860;
+    }
+    html, body {
+      overflow-x: hidden;
+    }
+    body {
+      background: #fafafa;
+    }
+    .app-hero {
+      background: linear-gradient(135deg, #ffdd57 0%, #ff3860 100%);
+      color: #fff;
+    }
+    .navbar {
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      backdrop-filter: blur(6px);
+    }
+    h1.title {
+        text-shadow: 1px 1px #2e333d;
+    }
+    .score-badge {
+      background: #fff;
+      border-radius: 999px;
+      padding: 0.25rem 0.75rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      display: inline-flex;
+      gap: 0.5rem;
+      align-items: center;
+      color: #363636;
+    }
+    .tag-halal {
+      background: #22c55e !important;
+      color: #fff !important;
+    }
+    .card .image img {
+      object-fit: cover;
+    }
+    .pill {
+      border-radius: 999px;
+    }
+    .is-clickable {
+      cursor: pointer;
+    }
+    .fixed-footer {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      background: #fff;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .progress.is-thin {
+      height: 6px;
+    }
+    .small {
+      font-size: 0.9rem;
+    }
+    .smaller {
+      font-size: 0.8rem;
+    }
+    .nowrap {
+      white-space: nowrap;
+    }
+    .pointer {
+      cursor: pointer;
+    }
+    .recipe-img {
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f6f6f6;
+    }
+    .kbd {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-bottom-width: 3px;
+      padding: 0 0.4rem;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.85em;
+    }
+    .overlay-hint {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+    .card-footer-item.is-danger:hover {
+      background: #fff5f7;
+    }
+    /* Mobile tweaks */
+    @media (max-width: 768px) {
+      .columns.is-mobile-compact {
+        margin-left: 0;
+        margin-right: 0;
+      }
+      .columns.is-mobile-compact > .column {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      /* Fixed footer actions: wrap controls and show icons only */
+      .fixed-footer .field.has-addons { flex-wrap: wrap; }
+      .fixed-footer .field.has-addons .control { flex: 1 1 auto; margin-bottom: 0.5rem; }
+      .fixed-footer .field.has-addons .control.is-expanded { order: 4; flex-basis: 100%; }
+      /* Compact tables */
+      .table th, .table td { padding: 0.5rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- NAVBAR -->
+    <nav class="navbar is-white" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" @click="view='accueil'; mobileNav=false">
+            <span class="icon has-text-danger"><i class="fa-solid fa-utensils"></i></span>
+            <strong class="ml-2">MamaChef</strong>
+          </a>
+          <a role="button"
+             class="navbar-burger"
+             :class="{'is-active': mobileNav}"
+             aria-label="menu"
+             :aria-expanded="mobileNav ? 'true' : 'false'"
+             @click="mobileNav = !mobileNav">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div class="navbar-menu" :class="{'is-active': mobileNav}">
+          <div class="navbar-start">
+            <a class="navbar-item" :class="{'has-text-danger': view==='accueil'}" @click="view='accueil'; mobileNav=false">
+              Accueil
+            </a>
+            <a class="navbar-item" :class="{'has-text-danger': view==='recettes'}" @click="view='recettes'; mobileNav=false">
+              Recettes
+            </a>
+            <a class="navbar-item" :class="{'has-text-danger': view==='planning'}" @click="view='planning'; mobileNav=false">
+              Planning
+            </a>
+            <a class="navbar-item" :class="{'has-text-danger': view==='inventaire'}" @click="view='inventaire'; mobileNav=false">
+              Ingrédients
+            </a>
+            <a class="navbar-item" :class="{'has-text-danger': view==='conseils'}" @click="view='conseils'; mobileNav=false">
+              Conseils Chefs
+            </a>
+            <a class="navbar-item" :class="{'has-text-danger': view==='profil'}" @click="view='profil'; mobileNav=false">
+              Profil & Scores
+            </a>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="score-badge">
+                <span class="icon has-text-warning"><i class="fa-solid fa-star"></i></span>
+                <span>{{ totalScore }} pts</span>
+                <span class="tag is-danger is-light pill is-small ml-2">Niveau {{ level }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero app-hero">
+      <div class="hero-body">
+        <div class="container">
+          <div class="columns is-vcentered">
+            <div class="column">
+              <h1 class="title is-3 mb-2">Recettes Saines & Équilibrées</h1>
+              <p class="subtitle has-text-dark">
+                Créez, réviser et planifier vos repas. Gagnez des points, montez de niveau et débloquez des défis culinaires du monde entier.
+              </p>
+
+              <div class="buttons">
+                <button class="button is-dark" @click="view='recettes'">
+                  <span class="icon"><i class="fa-solid fa-bowl-food"></i></span>
+                  <span>Explorer des recettes</span>
+                </button>
+                <button class="button is-danger" @click="quickChallenge()">
+                  <span class="icon"><i class="fa-solid fa-bolt"></i></span>
+                  <span>Défi éclair</span>
+                </button>
+                <button class="button is-light" @click="generateChefTip()">
+                  <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                  <span>Astuce d’un Chef</span>
+                </button>
+              </div>
+            </div>
+            <div class="column">
+              <div class="box">
+                <p class="title is-5 mb-2">Progression</p>
+                <progress class="progress is-danger is-thin" :value="progressPercent" max="100">{{ progressPercent }}%</progress>
+                <div class="columns is-variable is-1 mt-3">
+                  <div class="column has-text-centered">
+                    <p class="heading">Recettes</p>
+                    <p class="title is-6">{{ recipes.length }}</p>
+                  </div>
+                  <div class="column has-text-centered">
+                    <p class="heading">Planning</p>
+                    <p class="title is-6">{{ plannedMealsCount }}</p>
+                  </div>
+                  <div class="column has-text-centered">
+                    <p class="heading">Conseils lus</p>
+                    <p class="title is-6">{{ tipsRead }}</p>
+                  </div>
+                  <div class="column has-text-centered">
+                    <p class="heading">Défis</p>
+                    <p class="title is-6">{{ challengesDone }}</p>
+                  </div>
+                </div>
+                <p class="small mt-2">
+                  Objectif du niveau suivant: {{ nextLevelTarget }} pts
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="notification is-light mt-2 has-text-dark is-hidden-mobile">
+            Astuce: appuyez sur <span class="kbd">R</span> pour générer une recette via l’IA, <span class="kbd">T</span> pour une astuce de Chef, <span class="kbd">D</span> pour un défi.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <section class="section pt-5">
+      <div class="container">
+        <!-- ACCUEIL -->
+        <div v-show="view==='accueil'">
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <article class="message is-info">
+                <div class="message-header">
+                  <p>Bienvenue sur MamaChef</p>
+                </div>
+                <div class="message-body">
+                  Utilisez le générateur IA pour créer de nouvelles recettes halal équilibrées, gérez vos ingrédients et planifiez vos repas à la semaine. Plus vous cuisinez sainement et planifiez efficacement, plus vous gagnez de points et montez de niveau !
+                </div>
+              </article>
+            </div>
+            <div class="column is-6">
+              <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">
+                    Génération IA de recettes
+                  </p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <label class="label">Prompt</label>
+                    <div class="field has-addons">
+                      <div class="control is-expanded">
+                        <input class="input"
+                               v-model="aiPrompt"
+                               placeholder="Ex: Plat principal algérien, poulet, légumes, 600 kcal max, halal" />
+                      </div>
+                      <div class="control">
+                        <button class="button is-danger" :class="{'is-loading': aiLoading}" @click="generateRecipe()">
+                          Générer
+                        </button>
+                      </div>
+                    </div>
+                    <p class="help">L’IA proposera une recette, avec estimation calorique et étapes. Image générée automatiquement.</p>
+                  </div>
+                </div>
+                <footer class="card-footer">
+                  <a class="card-footer-item" @click="view='recettes'">Voir toutes les recettes</a>
+                </footer>
+              </div>
+            </div>
+
+            <div class="column is-6">
+              <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">Défi du jour</p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <p><strong>{{ dailyChallenge.title }}</strong></p>
+                    <p class="small">{{ dailyChallenge.desc }}</p>
+                    <div class="tags mt-2">
+                      <span class="tag is-warning is-light">+{{ dailyChallenge.points }} pts</span>
+                      <span class="tag tag-halal">Halal</span>
+                      <span class="tag is-success is-light">Sain</span>
+                    </div>
+                  </div>
+                </div>
+                <footer class="card-footer">
+                  <a class="card-footer-item" @click="completeDailyChallenge()">Valider</a>
+                  <a class="card-footer-item" @click="quickChallenge()">Nouveau défi</a>
+                </footer>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECETTES -->
+        <div v-show="view==='recettes'">
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <p class="title is-5 has-text-dark">Recettes</p>
+              </div>
+            </div>
+            
+            <div class="level-right">
+              <div class="level-item">
+                <div class="field has-addons">
+                  <p class="control is-expanded">
+                    <input class="input" v-model="searchRecipe" placeholder="Rechercher une recette..." />
+                  </p>
+                  <p class="control">
+                    <span class="select">
+                      <select v-model="filterTag">
+                        <option value="">Toutes</option>
+                        <option>Entrée</option>
+                        <option>Plat</option>
+                        <option>Dessert</option>
+                        <option>Snack</option>
+                      </select>
+                    </span>
+                  </p>
+                  <p class="control">
+                    <button class="button is-danger" @click="generateRecipe()" :class="{'is-loading': aiLoading}">
+                      <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                      <span class="is-hidden-mobile">Nouvelle recette IA</span>
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="columns is-multiline is-mobile-compact">
+            <div class="column is-12" v-if="filteredRecipes.length===0">
+              <div class="notification is-light">Aucune recette pour l’instant. Essayez d’en générer une via l’IA.</div>
+            </div>
+            <div v-for="r in filteredRecipes" :key="r.id" class="column is-12-tablet is-6-desktop">
+              <div class="card">
+                <div class="card-image" v-if="r.imageUrl">
+                  <figure class="image is-16by9 recipe-img">
+                    <img :src="r.imageUrl" :alt="r.title" />
+                    <span class="overlay-hint">{{ r.calories || '?' }} kcal</span>
+                  </figure>
+                </div>
+                <header class="card-header">
+                  <p class="card-header-title">
+                    {{ r.title }}
+                  </p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <div class="tags">
+                      <span class="tag tag-halal">Halal</span>
+                      <span class="tag is-link is-light" v-for="t in r.tags" :key="t">{{ t }}</span>
+                    </div>
+
+                    <p class="small"><strong>Ingrédients:</strong> {{ r.ingredients.join(', ') }}</p>
+
+                    <details class="mt-2">
+                      <summary class="pointer">Étapes</summary>
+                      <ol class="mt-2">
+                        <li v-for="(s,idx) in r.steps" :key="idx">{{ s }}</li>
+                      </ol>
+                    </details>
+
+                    <div class="columns is-mobile mt-3">
+                      <div class="column">
+                        <span class="icon-text">
+                          <span class="icon has-text-danger"><i class="fa-solid fa-fire"></i></span>
+                          <span class="smaller">{{ r.calories || '?' }} kcal</span>
+                        </span>
+                      </div>
+                      <div class="column has-text-right">
+                        <button class="button is-small is-light" @click="addToPlan(r)">
+                          <span class="icon"><i class="fa-solid fa-calendar-plus"></i></span>
+                          <span>Planifier</span>
+                        </button>
+                        <button class="button is-small is-light ml-1" @click="cookRecipe(r)">
+                          <span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
+                          <span>Cuisiné</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <footer class="card-footer">
+                  <a class="card-footer-item" @click="editRecipe(r)">Modifier</a>
+                  <a class="card-footer-item is-danger" @click="deleteRecipe(r)">Supprimer</a>
+                </footer>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PLANNING -->
+        <div v-show="view==='planning'">
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <p class="title is-5 has-text-dark">Planning des repas (7 jours)</p>
+              </div>
+            </div>
+            <div class="level-right">
+              <div class="level-item">
+                <button class="button is-light" @click="autoPlan()">
+                  <span class="icon"><i class="fa-solid fa-shuffle"></i></span>
+                  <span>Auto-planifier</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <article class="message is-light">
+                <div class="message-body">
+                  Objectif calorique par jour:
+                  <input type="number" class="input is-inline-block" style="max-width: 120px"
+                         v-model.number="dailyCalorieGoal" @change="saveAll()">
+                  kcal. Ajustez vos plats pour rester dans la plage souhaitée.
+                </div>
+              </article>
+            </div>
+            <div class="column is-12">
+              <div class="table-container">
+                <table class="table is-fullwidth is-striped is-narrow">
+                  <thead>
+                    <tr>
+                      <th>Jour</th>
+                      <th>Petit-déj.</th>
+                      <th>Déjeuner</th>
+                      <th>Dîner</th>
+                      <th>Calories (estim.)</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(day, idx) in weekDays" :key="day">
+                      <td class="nowrap"><strong>{{ day }}</strong></td>
+                      <td>
+                        <div v-if="planning[idx].breakfast">
+                          <span class="icon-text">
+                            <span class="icon"><i class="fa-solid fa-bread-slice"></i></span>
+                            <span>{{ planning[idx].breakfast.title }}</span>
+                          </span>
+                        </div>
+                        <div v-else class="has-text-grey">—</div>
+                      </td>
+                      <td>
+                        <div v-if="planning[idx].lunch">
+                          <span class="icon-text">
+                            <span class="icon"><i class="fa-solid fa-bowl-food"></i></span>
+                            <span>{{ planning[idx].lunch.title }}</span>
+                          </span>
+                        </div>
+                        <div v-else class="has-text-grey">—</div>
+                      </td>
+                      <td>
+                        <div v-if="planning[idx].dinner">
+                          <span class="icon-text">
+                            <span class="icon"><i class="fa-solid fa-drumstick-bite"></i></span>
+                            <span>{{ planning[idx].dinner.title }}</span>
+                          </span>
+                        </div>
+                        <div v-else class="has-text-grey">—</div>
+                      </td>
+                      <td class="has-text-dark">
+                        <span :class="calorieClass(dayCalories(idx))">{{ dayCalories(idx) }} / {{ dailyCalorieGoal }} kcal</span>
+                      </td>
+                      <td class="has-text-right">
+                        <div class="buttons are-small">
+                          <div class="dropdown is-right" :class="{'is-active': openPlannerDropdown===idx}">
+                            <div class="dropdown-trigger">
+                              <button class="button is-light" @click="togglePlanner(idx)">
+                                <span class="icon"><i class="fa-solid fa-plus"></i></span>
+                                <span>Ajouter</span>
+                              </button>
+                            </div>
+                            <div class="dropdown-menu">
+                              <div class="dropdown-content" style="max-height: 280px; overflow:auto;">
+                                <div class="dropdown-item">
+                                  <p class="small has-text-grey">Choisir une recette</p>
+                                  <input class="input is-small mb-2" v-model="plannerSearch" placeholder="Filtrer..." />
+                                </div>
+                                <a class="dropdown-item"
+                                   v-for="rec in recipesFilteredByPlanner"
+                                   :key="rec.id"
+                                   @click="assignToDay(idx, rec)">
+                                  {{ rec.title }} <span class="tag is-light ml-2">{{ (rec.calories||'?') }} kcal</span>
+                                </a>
+                                <hr class="dropdown-divider">
+                                <a class="dropdown-item" @click="openPlannerDropdown=null">Fermer</a>
+                              </div>
+                            </div>
+                          </div>
+                          <button class="button is-light" @click="clearDay(idx)">
+                            <span class="icon"><i class="fa-regular fa-trash-can"></i></span>
+                            <span>Vider</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Total semaine</th>
+                      <th colspan="3"></th>
+                      <th>{{ weekCalories }} kcal</th>
+                      <th></th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INVENTAIRE -->
+        <div v-show="view==='inventaire'">
+          <div class="columns">
+            <div class="column is-7">
+              <p class="title is-5 has-text-dark">Gestion des ingrédients</p>
+              <div class="box">
+                <div class="columns">
+                  <div class="column">
+                    <input class="input" v-model="newIngredient.name" placeholder="Nom (ex: Poulet)" />
+                  </div>
+                  <div class="column">
+                    <input class="input" v-model="newIngredient.category" placeholder="Catégorie (viande, légume...)" />
+                  </div>
+                </div>
+                <div class="columns is-mobile">
+                  <div class="column is-4">
+                    <input class="input" type="number" min="0" v-model.number="newIngredient.kcal"
+                           placeholder="kcal / 100g" />
+                  </div>
+                  <div class="column is-4">
+                    <input class="input" v-model="newIngredient.unit" placeholder="Unité (g, ml, pièce)" />
+                  </div>
+                  <div class="column is-4">
+                    <button class="button is-danger is-fullwidth" @click="addIngredient()">Ajouter</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" v-model="ingredientSearch" placeholder="Rechercher un ingrédient..." />
+                </div>
+                <div class="control">
+                  <div class="select">
+                    <select v-model="ingredientFilter">
+                      <option value="">Toutes catégories</option>
+                      <option v-for="c in ingredientCategories" :key="c" :value="c">{{ c }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-container">
+                <table class="table is-striped is-fullwidth is-narrow">
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Catégorie</th>
+                      <th>kcal/100g</th>
+                      <th>Unité</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="ing in filteredIngredients" :key="ing.id">
+                      <td>{{ ing.name }}</td>
+                      <td>{{ ing.category }}</td>
+                      <td>{{ ing.kcal }}</td>
+                      <td>{{ ing.unit }}</td>
+                      <td class="has-text-right">
+                        <button class="button is-small is-light" @click="editIngredient(ing)">
+                          <span class="icon"><i class="fa-regular fa-pen-to-square"></i></span>
+                        </button>
+                        <button class="button is-small is-light" @click="deleteIngredient(ing)">
+                          <span class="icon has-text-danger"><i class="fa-regular fa-trash-can"></i></span>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <article class="message is-info">
+                <div class="message-body smaller">
+                  Conseil: vous pouvez lier des ingrédients à une recette lors de l’édition de celle-ci pour
+                  estimer plus finement les calories.
+                </div>
+              </article>
+            </div>
+
+            <div class="column is-5">
+              <p class="title is-6 has-text-dark">Panier de courses</p>
+              <div class="box">
+                <div class="field has-addons">
+                  <div class="control is-expanded">
+                    <input class="input" v-model="shoppingItem" placeholder="Ajouter au panier..." />
+                  </div>
+                  <div class="control">
+                    <button class="button is-light" @click="addToShopping()">
+                      <span class="icon"><i class="fa-solid fa-cart-plus"></i></span>
+                    </button>
+                  </div>
+                </div>
+
+                <ul>
+                  <li v-for="(it, idx) in shoppingList" :key="idx" class="mb-2">
+                    <label class="checkbox">
+                      <input type="checkbox" v-model="it.done" @change="saveAll()" />
+                      <span :class="{'has-text-grey-light': it.done}" class="ml-2">{{ it.name }}</span>
+                    </label>
+                    <button class="button is-very-small is-white ml-2" title="Supprimer" @click="removeShopping(idx)">
+                      <span class="icon has-text-danger"><i class="fa-regular fa-trash-can"></i></span>
+                    </button>
+                  </li>
+                </ul>
+                <button class="button is-light is-fullwidth mt-2" @click="shoppingList=[]; saveAll()">
+                  Vider le panier
+                </button>
+              </div>
+
+              <p class="title is-6 has-text-dark">Objectifs santé</p>
+              <div class="box">
+                <label class="label">Préférences</label>
+                <div class="field">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="prefs.lowSalt" @change="saveAll()"> Pauvre en sel
+                  </label>
+                </div>
+                <div class="field">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="prefs.lowSugar" @change="saveAll()"> Pauvre en sucre
+                  </label>
+                </div>
+                <div class="field">
+                  <label class="checkbox">
+                    <input type="checkbox" v-model="prefs.highProtein" @change="saveAll()"> Riche en protéines
+                  </label>
+                </div>
+              </div>
+
+              <article class="message is-success">
+                <div class="message-header">
+                  <p>Halal et sain</p>
+                </div>
+                <div class="message-body smaller">
+                  Toutes les recettes générées sont suggérées comme halal par défaut. Vérifiez néanmoins vos ingrédients et labels.
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONSEILS -->
+        <div v-show="view==='conseils'">
+          <div class="level">
+            <div class="level-left">
+              <div class="level-item">
+                <p class="title is-5 has-text-dark">Conseils et bonnes pratiques de Chefs</p>
+              </div>
+            </div>
+            <div class="level-right">
+              <div class="level-item">
+                <button class="button is-danger" :class="{'is-loading': tipLoading}" @click="generateChefTip()">
+                  <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                  <span>Nouvelle astuce IA</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="columns is-multiline">
+            <div class="column is-12" v-if="tips.length===0">
+              <div class="notification is-light">Demandez une astuce pour commencer.</div>
+            </div>
+            <div class="column is-12" v-for="(tip, idx) in tips" :key="idx">
+              <article class="message is-info">
+                <div class="message-header">
+                  <p>Astuce #{{ idx+1 }}</p>
+                  <button class="delete" @click="removeTip(idx)"></button>
+                </div>
+                <div class="message-body">
+                  <p class="mb-2">{{ tip.text }}</p>
+                  <div class="tags">
+                    <span class="tag is-light has-text-link" v-for="tg in tip.tags" :key="tg">{{ tg }}</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROFIL -->
+        <div v-show="view==='profil'">
+          <div class="columns">
+            <div class="column is-7">
+              <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">Profil & progression</p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                    <p><strong>Nom:</strong> <input class="input is-inline-block" style="max-width: 260px"
+                      v-model="profile.name" @change="saveAll()" placeholder="Votre nom" /></p>
+                    <p><strong>Niveau:</strong> {{ level }}</p>
+                    <p><strong>Score total:</strong> {{ totalScore }} pts</p>
+                    <progress class="progress is-danger" :value="progressPercent" max="100">{{ progressPercent }}%</progress>
+
+                    <div class="columns">
+                      <div class="column">
+                        <p class="heading">Recettes cuisinées</p>
+                        <p class="title is-5">{{ stats.cooked }}</p>
+                      </div>
+                      <div class="column">
+                        <p class="heading">Planning rempli</p>
+                        <p class="title is-5">{{ plannedMealsCount }}</p>
+                      </div>
+                      <div class="column">
+                        <p class="heading">Défis effectués</p>
+                        <p class="title is-5">{{ challengesDone }}</p>
+                      </div>
+                    </div>
+
+                    <p class="small">Débloquez des badges en réussissant des défis et en respectant vos objectifs caloriques.</p>
+                    <div class="tags mt-2">
+                      <span class="tag is-warning is-light" v-for="b in badges" :key="b">{{ b }}</span>
+                    </div>
+                  </div>
+                </div>
+                <footer class="card-footer">
+                  <a class="card-footer-item" @click="exportData()">Exporter les données</a>
+                  <a class="card-footer-item" @click="importDialogOpen=true">Importer</a>
+                  <a class="card-footer-item is-danger" @click="clearAll()">Effacer toutes les données</a>
+                </footer>
+              </div>
+            </div>
+
+            <div class="column is-5">
+              <div class="card is-hidden-mobile">
+                <header class="card-header">
+                  <p class="card-header-title">Raccourcis</p>
+                </header>
+                <div class="card-content">
+                  <ul>
+                    <li><span class="kbd">R</span> Générer une recette IA</li>
+                    <li><span class="kbd">T</span> Générer une astuce IA</li>
+                    <li><span class="kbd">D</span> Défi éclair</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="card mt-4">
+                <header class="card-header">
+                  <p class="card-header-title">Paramètres</p>
+                </header>
+                <div class="card-content">
+                  <button class="button is-link is-light" @click="installPwa()">
+                    <span class="icon"><i class="fa-solid fa-download"></i></span>
+                    <span>Installer l'application</span>
+                  </button>
+                  <p class="small has-text-grey mt-2">{{ pwaStatus }}</p>
+                </div>
+              </div>
+
+              <div class="card mt-4">
+                <header class="card-header">
+                  <p class="card-header-title">À propos</p>
+                </header>
+                <div class="card-content">
+                  <p class="small">
+                    Ce jeu sérieux utilise des services d’IA publics pour générer du texte et des images. Les contenus sont des suggestions et doivent être adaptés à vos besoins nutritionnels et convictions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FIXED FOOTER ACTIONS -->
+    <div class="fixed-footer">
+      <div class="container py-3">
+        <div class="columns is-vcentered">
+          <div class="column is-12-mobile is-8-tablet">
+            <div class="field has-addons">
+              <p class="control">
+                <a class="button is-danger" @click="generateRecipe()" :class="{'is-loading': aiLoading}">
+                  <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                  <span class="is-hidden-mobile">Recette IA</span>
+                </a>
+              </p>
+              <p class="control">
+                <a class="button is-dark" @click="generateChefTip()" :class="{'is-loading': tipLoading}">
+                  <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                  <span class="is-hidden-mobile">Astuce IA</span>
+                </a>
+              </p>
+              <p class="control">
+                <a class="button" @click="quickChallenge()">
+                  <span class="icon"><i class="fa-solid fa-bolt"></i></span>
+                  <span class="is-hidden-mobile">Défi</span>
+                </a>
+              </p>
+              <p class="control is-expanded">
+                <input class="input" v-model="aiPrompt" placeholder="Prompt IA (ex: couscous léger 500 kcal, halal)" />
+              </p>
+            </div>
+          </div>
+          <div class="column is-12-mobile is-4-tablet has-text-centered-mobile has-text-right-tablet">
+            <span class="icon-text">
+              <span class="icon has-text-danger"><i class="fa-solid fa-star"></i></span>
+              <span>{{ totalScore }} pts</span>
+            </span>
+            <span class="tag is-danger is-light pill ml-2">Niveau {{ level }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Edit Recipe Modal -->
+    <div class="modal" :class="{'is-active': editRecipeModal}">
+      <div class="modal-background" @click="editRecipeModal=false"></div>
+      <div class="modal-card" style="width: 920px; max-width: 95vw;">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Éditer la recette</p>
+          <button class="delete" aria-label="close" @click="editRecipeModal=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <div v-if="editingRecipe">
+            <div class="columns">
+              <div class="column is-7">
+                <div class="field">
+                  <label class="label">Titre</label>
+                  <input class="input" v-model="editingRecipe.title" />
+                </div>
+                <div class="field">
+                  <label class="label">Tags</label>
+                  <input class="input" v-model="tagsBuffer" placeholder="Séparés par des virgules (ex: Plat, Maghreb)" />
+                </div>
+                <div class="field">
+                  <label class="label">Calories (estimées)</label>
+                  <input class="input" type="number" v-model.number="editingRecipe.calories" />
+                </div>
+                <div class="field">
+                  <label class="label">Étapes (une par ligne)</label>
+                  <textarea class="textarea" rows="6" v-model="stepsBuffer"></textarea>
+                </div>
+              </div>
+              <div class="column is-5">
+                <div class="field">
+                  <label class="label">Ingrédients (un par ligne)</label>
+                  <textarea class="textarea" rows="6" v-model="ingredientsBuffer"></textarea>
+                </div>
+                <div class="field">
+                  <label class="label">Image (générée automatiquement, peut être régénérée)</label>
+                  <figure class="image is-16by9 recipe-img" v-if="editingRecipe.imageUrl">
+                    <img :src="editingRecipe.imageUrl" :alt="editingRecipe.title" />
+                  </figure>
+                  <button class="button is-light mt-2" @click="regenImageFor(editingRecipe)">
+                    <span class="icon"><i class="fa-solid fa-image"></i></span>
+                    <span>Régénérer l’image</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-danger" @click="saveEditingRecipe()">Enregistrer</button>
+          <button class="button" @click="editRecipeModal=false">Fermer</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" :class="{'is-active': importDialogOpen}">
+      <div class="modal-background" @click="importDialogOpen=false"></div>
+      <div class="modal-card" style="width: 760px; max-width: 95vw;">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Importer des données</p>
+          <button class="delete" aria-label="close" @click="importDialogOpen=false"></button>
+        </header>
+        <section class="modal-card-body">
+          <p class="small">Collez ici les données exportées précédemment.</p>
+          <textarea class="textarea" rows="10" v-model="importBuffer" placeholder='{"recipes":[...], ...}'></textarea>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-danger" @click="performImport()">Importer</button>
+          <button class="button" @click="importDialogOpen=false">Annuler</button>
+        </footer>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Utilitaires pour Pollinations API
+    // Text: on utilisera une requête GET simple vers text endpoint si disponible,
+    // sinon fallback à un prompt plus simple. Lien pris du contexte: https://text.pollinations.ai/...
+    // Images: https://image.pollinations.ai/prompt/<prompt encodé>
+    const Pollinations = {
+      imageUrl(prompt, width=1024, height=768, seed = -1, model='turbo'){
+          return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${encodeURIComponent(model)}&nologo=true`;
+        },
+      // Texte: on utilise un endpoint simple. Si indisponible, on fera un fallback local.
+      textUrl(prompt) {
+        // API publique simple (peut changer). Nous passons par un endpoint textuel.
+        // Pour une meilleure compat, on encode le prompt dans l'URL.
+        return `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+      },
+      async fetchText(prompt, timeoutMs = 20000) {
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(this.textUrl(prompt), { signal: controller.signal });
+          clearTimeout(t);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          // Certains endpoints renvoient du texte brut
+          const txt = await res.text();
+          return txt;
+        } catch (e) {
+          clearTimeout(t);
+          // Fallback: message générique
+          return null;
+        }
+      }
+    };
+
+    const app = Vue.createApp({
+      data() {
+        return {
+          mobileNav: false,
+          view: 'accueil',
+
+          // IA
+          aiPrompt: '',
+          aiLoading: false,
+          tipLoading: false,
+
+          // Recettes
+          recipes: [],
+          searchRecipe: '',
+          filterTag: '',
+          editingRecipe: null,
+          editRecipeModal: false,
+          ingredientsBuffer: '',
+          stepsBuffer: '',
+          tagsBuffer: '',
+
+          // Planning
+          weekDays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+          planning: Array.from({length: 7}, () => ({ breakfast: null, lunch: null, dinner: null })),
+          dailyCalorieGoal: 1800,
+          openPlannerDropdown: null,
+          plannerSearch: '',
+
+          // Ingrédients
+          ingredients: [],
+          newIngredient: { name: '', category: '', kcal: 0, unit: '' },
+          ingredientSearch: '',
+          ingredientFilter: '',
+          shoppingList: [],
+          shoppingItem: '',
+
+          // Conseils (tips)
+          tips: [],
+          tipsRead: 0,
+
+          // Défis
+          dailyChallenge: { title: 'Cuisiner un plat de saison', desc: 'Utilisez au moins 2 légumes de saison.', points: 20 },
+          challengesDone: 0,
+
+          // Profil & progression
+          profile: { name: '' },
+          totalScore: 0,
+          stats: { cooked: 0 },
+          badges: [],
+
+          // Import/Export
+          importDialogOpen: false,
+          importBuffer: '',
+
+          // PWA Install
+          deferredPrompt: null,
+          pwaStatus: ''
+        }
+      },
+      computed: {
+        filteredRecipes() {
+          const q = this.searchRecipe.trim().toLowerCase();
+          const tag = this.filterTag;
+          return this.recipes.filter(r => {
+            const matchesText = !q || (r.title.toLowerCase().includes(q) || r.ingredients.join(' ').toLowerCase().includes(q));
+            const matchesTag = !tag || (r.tags || []).includes(tag);
+            return matchesText && matchesTag;
+          });
+        },
+        ingredientCategories() {
+          const set = new Set(this.ingredients.map(i => i.category).filter(Boolean));
+          return Array.from(set);
+        },
+        filteredIngredients() {
+          const q = this.ingredientSearch.trim().toLowerCase();
+          const f = this.ingredientFilter;
+          return this.ingredients.filter(i => {
+            const mt = !q || i.name.toLowerCase().includes(q);
+            const mc = !f || i.category === f;
+            return mt && mc;
+          });
+        },
+        plannedMealsCount() {
+          return this.planning.reduce((acc, d) => acc + ['breakfast','lunch','dinner'].filter(k => !!d[k]).length, 0);
+        },
+        weekCalories() {
+          return this.planning.reduce((acc, _, i) => acc + this.dayCalories(i), 0);
+        },
+        progressPercent() {
+          const needed = this.nextLevelTarget;
+          if (needed === 0) return 100;
+          const base = this.currentLevelFloor;
+          const segment = needed - base;
+          const val = Math.max(0, Math.min(100, Math.round(((this.totalScore - base) / segment) * 100)));
+          return isNaN(val) ? 0 : val;
+        },
+        level() {
+          // Courbe de progression simple: 0-99 pts L1, 100-249 L2, 250-449 L3, 450-699 L4, ...
+          const s = this.totalScore;
+          if (s < 100) return 1;
+          if (s < 250) return 2;
+          if (s < 450) return 3;
+          if (s < 700) return 4;
+          if (s < 1000) return 5;
+          return Math.floor(5 + (s - 1000) / 400) + 1;
+        },
+        nextLevelTarget() {
+          const s = this.totalScore;
+          if (s < 100) return 100;
+          if (s < 250) return 250;
+          if (s < 450) return 450;
+          if (s < 700) return 700;
+          if (s < 1000) return 1000;
+          const blocks = Math.floor((s - 1000) / 400) + 1;
+          return 1000 + blocks * 400;
+        },
+        currentLevelFloor() {
+          const s = this.totalScore;
+          if (s < 100) return 0;
+          if (s < 250) return 100;
+          if (s < 450) return 250;
+          if (s < 700) return 450;
+          if (s < 1000) return 700;
+          const blocks = Math.floor((s - 1000) / 400);
+          return 1000 + blocks * 400;
+        },
+        recipesFilteredByPlanner() {
+          const q = this.plannerSearch.trim().toLowerCase();
+          return this.recipes.filter(r => !q || r.title.toLowerCase().includes(q));
+        }
+      },
+      watch: {
+        view(v) {
+          // Bonus navigation
+          if (v === 'planning') this.addScore(2);
+          if (v === 'inventaire') this.addScore(1);
+        }
+      },
+      methods: {
+        // STORAGE
+        saveAll() {
+          const data = {
+            recipes: this.recipes,
+            planning: this.planning,
+            dailyCalorieGoal: this.dailyCalorieGoal,
+            ingredients: this.ingredients,
+            shoppingList: this.shoppingList,
+            tips: this.tips,
+            tipsRead: this.tipsRead,
+            challengesDone: this.challengesDone,
+            profile: this.profile,
+            totalScore: this.totalScore,
+            stats: this.stats,
+            badges: this.badges
+          };
+          localStorage.setItem('mamachef:data', JSON.stringify(data));
+        },
+        loadAll() {
+          const raw = localStorage.getItem('mamachef:data');
+          if (!raw) return;
+          try {
+            const data = JSON.parse(raw);
+            for (const k of Object.keys(data)) {
+              this[k] = data[k];
+            }
+          } catch(e) {
+            console.warn('Données corrompues, réinitialisation.');
+          }
+        },
+        exportData() {
+          const data = localStorage.getItem('mamachef:data') || '';
+          const blob = new Blob([data], {type: 'application/json'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'mamachef_data.json';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        },
+        performImport() {
+          try {
+            const obj = JSON.parse(this.importBuffer);
+            localStorage.setItem('mamachef:data', JSON.stringify(obj));
+            this.loadAll();
+            this.importDialogOpen = false;
+            this.notify('Import réalisé avec succès.', 'is-success');
+          } catch(e) {
+            this.notify('Import invalide.', 'is-danger');
+          }
+        },
+        clearAll() {
+          if (!confirm('Effacer toutes les données locales et recommencer ?')) return;
+          localStorage.removeItem('mamachef:data');
+          location.reload();
+        },
+
+        // NOTIFY simple
+        notify(msg, type='is-info', timeout=2000) {
+          const n = document.createElement('div');
+          n.className = `notification ${type}`;
+          n.textContent = msg;
+          n.style.position = 'fixed';
+          n.style.right = '12px';
+          n.style.bottom = '12px';
+          n.style.zIndex = '9999';
+          document.body.appendChild(n);
+          setTimeout(() => n.remove(), timeout);
+        },
+
+        // SCORING
+        addScore(points) {
+          this.totalScore += points;
+          this.saveAll();
+          this.checkBadges();
+        },
+        checkBadges() {
+          const push = (b) => { if (!this.badges.includes(b)) this.badges.push(b); };
+          if (this.stats.cooked >= 1) push('Première recette');
+          if (this.plannedMealsCount >= 7) push('Semaine complète');
+          if (this.tipsRead >= 3) push('Apprenti Chef');
+          if (this.totalScore >= 250) push('Motivé');
+          this.saveAll();
+        },
+
+        // RECETTES
+        async generateRecipe() {
+          try {
+            this.aiLoading = true;
+            const basePrompt = this.aiPrompt && this.aiPrompt.trim() ? this.aiPrompt.trim() :
+              "Propose une recette halal équilibrée en français pour un foyer, 500 à 700 kcal par portion, "
+              +"avec titre, liste d’ingrédients, étapes claires (4 à 8), tags (Entrée/Plat/Dessert/Snack), "
+              +"et estimation calorique. Style concis.";
+            const promptText = `Génère une recette structurée au format JSON compact: { "title": "", "ingredients": ["..."], "steps": ["..."], "tags": ["Plat"], "calories": 600 }.\nExclusivement du JSON.\nContrainte halal et saine.\nDemande: ${basePrompt}`;
+            const txt = await Pollinations.fetchText(promptText);
+            let parsed = null;
+            if (txt) {
+              // Essayer d'extraire du JSON si l'IA renvoie du texte additionnel
+              const match = txt.match(/\{[\s\S]*\}/);
+              if (match) {
+                try { parsed = JSON.parse(match[0]); } catch(e) { parsed = null; }
+              }
+            }
+            if (!parsed) {
+              // Fallback local
+              parsed = {
+                title: 'Salade de poulet grillé aux herbes',
+                ingredients: ['Poulet', 'Salade verte', 'Tomates', 'Concombre', 'Citron', 'Huile d’olive', 'Herbes', 'Sel'],
+                steps: ['Griller le poulet', 'Couper les légumes', 'Mélanger et assaisonner', 'Servir frais'],
+                tags: ['Plat'],
+                calories: 620
+              };
+            }
+            const recipe = {
+              id: 'r_' + Date.now(),
+              title: parsed.title || 'Recette halal',
+              ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [],
+              steps: Array.isArray(parsed.steps) ? parsed.steps : [],
+              tags: Array.isArray(parsed.tags) ? parsed.tags : ['Plat'],
+              calories: typeof parsed.calories === 'number' ? parsed.calories : null,
+              imageUrl: ''
+            };
+            // Générer image
+            const imgPrompt = `Photo culinaire appétissante, ${recipe.title}, présentation chef, halal, style magazine, éclairage naturel`;
+            recipe.imageUrl = Pollinations.imageUrl(imgPrompt, 960, 540);
+
+            this.recipes.unshift(recipe);
+            this.addScore(10); // création recette
+            this.saveAll();
+            this.view = 'recettes';
+            this.notify('Recette générée !', 'is-success');
+          } catch(e) {
+            console.error(e);
+            this.notify("Impossible de générer la recette maintenant.", 'is-danger');
+          } finally {
+            this.aiLoading = false;
+          }
+        },
+        editRecipe(r) {
+          this.editingRecipe = JSON.parse(JSON.stringify(r));
+          this.ingredientsBuffer = (this.editingRecipe.ingredients || []).join('\n');
+          this.stepsBuffer = (this.editingRecipe.steps || []).join('\n');
+          this.tagsBuffer = (this.editingRecipe.tags || []).join(', ');
+          this.editRecipeModal = true;
+        },
+        saveEditingRecipe() {
+          if (!this.editingRecipe) return;
+          this.editingRecipe.ingredients = this.ingredientsBuffer.split('\n').map(s => s.trim()).filter(Boolean);
+          this.editingRecipe.steps = this.stepsBuffer.split('\n').map(s => s.trim()).filter(Boolean);
+          this.editingRecipe.tags = this.tagsBuffer.split(',').map(s => s.trim()).filter(Boolean);
+          const idx = this.recipes.findIndex(r => r.id === this.editingRecipe.id);
+          if (idx >= 0) {
+            this.recipes[idx] = JSON.parse(JSON.stringify(this.editingRecipe));
+          }
+          this.editRecipeModal = false;
+          this.editingRecipe = null;
+          this.saveAll();
+          this.notify('Recette mise à jour.', 'is-success');
+        },
+        deleteRecipe(r) {
+          if (!confirm('Supprimer cette recette ?')) return;
+          this.recipes = this.recipes.filter(x => x.id !== r.id);
+          this.saveAll();
+        },
+        async regenImageFor(r) {
+          if (!r) return;
+          const imgPrompt = `Photo culinaire appétissante, ${r.title}, présentation chef, halal, style magazine, éclairage naturel`;
+          r.imageUrl = Pollinations.imageUrl(imgPrompt, 960, 540, Math.floor(Math.random()*999999));
+          if (this.editingRecipe && this.editingRecipe.id === r.id) {
+            this.editingRecipe.imageUrl = r.imageUrl;
+          }
+          const idx = this.recipes.findIndex(x => x.id === r.id);
+          if (idx>=0) this.recipes[idx].imageUrl = r.imageUrl;
+          this.saveAll();
+        },
+        cookRecipe(r) {
+          this.stats.cooked++;
+          this.addScore(8);
+          this.saveAll();
+          this.notify('Bravo ! Recette cuisinée. +8 pts', 'is-success');
+        },
+
+        // PLANNING
+        togglePlanner(idx) {
+          this.openPlannerDropdown = this.openPlannerDropdown === idx ? null : idx;
+        },
+        assignToDay(idx, rec) {
+          // Choix intelligent: remplir repas suivant vide
+          const slots = ['breakfast','lunch','dinner'];
+          const day = this.planning[idx];
+          const slot = slots.find(k => !day[k]) || 'lunch';
+          this.planning[idx][slot] = { id: rec.id, title: rec.title, calories: rec.calories || 0 };
+          this.openPlannerDropdown = null;
+          this.addScore(3);
+          this.saveAll();
+        },
+        clearDay(idx) {
+          this.planning[idx] = { breakfast: null, lunch: null, dinner: null };
+          this.saveAll();
+        },
+        dayCalories(idx) {
+          const d = this.planning[idx];
+          const sum = ['breakfast','lunch','dinner'].reduce((a,k)=>a+(d[k]?.calories || 0),0);
+          return sum || 0;
+        },
+        calorieClass(val) {
+          if (val === 0) return 'tag is-light';
+          if (val <= this.dailyCalorieGoal + 100 && val >= this.dailyCalorieGoal - 200) return 'tag is-success is-light';
+          if (val > this.dailyCalorieGoal + 200) return 'tag is-danger is-light';
+          return 'tag is-warning is-light';
+        },
+        autoPlan() {
+          if (this.recipes.length === 0) {
+            this.notify('Aucune recette disponible.', 'is-warning');
+            return;
+          }
+          const pick = () => this.recipes[Math.floor(Math.random()*this.recipes.length)];
+          for (let i=0; i<7; i++) {
+            this.planning[i] = {
+              breakfast: { id: pick().id, title: pick().title, calories: pick().calories||0 },
+              lunch: { id: pick().id, title: pick().title, calories: pick().calories||0 },
+              dinner: { id: pick().id, title: pick().title, calories: pick().calories||0 }
+            };
+          }
+          this.addScore(5);
+          this.saveAll();
+          this.notify('Planning auto-généré !', 'is-success');
+        },
+        addToPlan(r) {
+          // Ajoute au premier jour/slot libre
+          for (let i=0;i<7;i++) {
+            const slots = ['breakfast','lunch','dinner'];
+            const free = slots.find(k => !this.planning[i][k]);
+            if (free) {
+              this.planning[i][free] = { id: r.id, title: r.title, calories: r.calories||0 };
+              this.addScore(2);
+              this.saveAll();
+              this.notify(`Ajouté au ${this.weekDays[i]} (${free}).`, 'is-success');
+              return;
+            }
+          }
+          this.notify('Aucun créneau libre. Ouvrez le planning pour ajuster.', 'is-warning');
+        },
+
+        // INGREDIENTS
+        addIngredient() {
+          const n = this.newIngredient;
+          if (!n.name.trim()) return;
+          this.ingredients.push({
+            id: 'i_' + Date.now() + '_' + Math.floor(Math.random()*9999),
+            name: n.name.trim(),
+            category: n.category.trim() || 'Autre',
+            kcal: Number(n.kcal)||0,
+            unit: n.unit.trim() || 'g'
+          });
+          this.newIngredient = { name: '', category: '', kcal: 0, unit: '' };
+          this.addScore(1);
+          this.saveAll();
+        },
+        editIngredient(ing) {
+          const name = prompt('Nom:', ing.name);
+          if (name===null) return;
+          const category = prompt('Catégorie:', ing.category);
+          if (category===null) return;
+          const kcal = prompt('kcal/100g:', ing.kcal);
+          if (kcal===null) return;
+          const unit = prompt('Unité:', ing.unit);
+          if (unit===null) return;
+          ing.name = name.trim();
+          ing.category = category.trim();
+          ing.kcal = Number(kcal)||0;
+          ing.unit = unit.trim();
+          this.saveAll();
+        },
+        deleteIngredient(ing) {
+          if (!confirm('Supprimer cet ingrédient ?')) return;
+          this.ingredients = this.ingredients.filter(x => x.id !== ing.id);
+          this.saveAll();
+        },
+        addToShopping() {
+          const s = this.shoppingItem.trim();
+          if (!s) return;
+          this.shoppingList.push({ name: s, done: false });
+          this.shoppingItem = '';
+          this.saveAll();
+        },
+        removeShopping(idx) {
+          this.shoppingList.splice(idx,1);
+          this.saveAll();
+        },
+
+        // CONSEILS
+        async generateChefTip() {
+          try {
+            this.tipLoading = true;
+            
+            const prefText = [
+              this.prefs.lowSalt ? 'pauvre en sel' : null,
+              this.prefs.lowSugar ? 'pauvre en sucre' : null,
+              this.prefs.highProtein ? 'riche en protéines' : null
+            ].filter(Boolean).join(', ') || 'équilibré';
+
+            let prompt = `Donne une nouvelle astuce de Chef en français (${parseInt((1+Math.random())*2)}-${parseInt((1+Math.random())*3)} phrases) sur la cuisine ${prefText}. Ajoute 3 tags pertinents. Réponse en JSON: {"text":"...", "tags":["...","...","..."]}.`;
+            if (this.recipes.length){
+                const randomRecipe = this.recipes[Math.floor(Math.random() * this.recipes.length)];
+                prompt += ` Recette: "${randomRecipe.title}". Ingredients [${randomRecipe.ingredients.join(', ')}].`;
+            }
+            const txt = await Pollinations.fetchText(prompt);
+            let tip = null;
+            if (txt) {
+              const m = txt.match(/\{[\s\S]*\}/);
+              if (m) {
+                try { tip = JSON.parse(m[0]); } catch(e) {}
+              }
+            }
+            if (!tip) {
+              tip = { text: "Préparez vos marinades à l’avance avec des épices douces et citron pour sublimer les viandes halal. Limitez le sel et compensez avec des herbes fraîches et des agrumes.", tags: ['Halal','Marinade','Santé'] };
+            }
+            this.tips.unshift(tip);
+            this.tipsRead++;
+            this.addScore(4);
+            this.saveAll();
+            this.notify('Astuce ajoutée !', 'is-success');
+          } catch(e) {
+            console.error(e);
+            this.notify("Impossible d’obtenir une astuce maintenant.", 'is-danger');
+          } finally {
+            this.tipLoading = false;
+          }
+        },
+        removeTip(idx) {
+          this.tips.splice(idx,1);
+          this.saveAll();
+        },
+
+        // DEFIS
+        quickChallenge() {
+          const challenges = [
+            { title: 'Menu 600 kcal', desc: 'Composez un déjeuner autour de 600 kcal ±100.', points: 15 },
+            { title: 'Zéro gaspillage', desc: 'Cuisinez en réutilisant un reste du frigo.', points: 12 },
+            { title: 'Vert & Protéiné', desc: 'Incluez 2 légumes verts et une source de protéines.', points: 18 },
+            { title: 'Hydratation', desc: 'Servez 2 verres d’eau avec chaque repas de la journée.', points: 8 },
+            { title: 'Batch cooking', desc: 'Planifiez et préparez 2 repas à l’avance.', points: 20 },
+          ];
+          this.dailyChallenge = challenges[Math.floor(Math.random()*challenges.length)];
+          this.view = 'accueil';
+          this.notify('Nouveau défi disponible !', 'is-info');
+        },
+        completeDailyChallenge() {
+          this.addScore(this.dailyChallenge.points);
+          this.challengesDone++;
+          this.saveAll();
+          this.notify(`Défi validé ! +${this.dailyChallenge.points} pts`, 'is-success');
+        },
+
+        // DIVERS
+        handleHotkeys(e) {
+          if (e.target && ['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+          if (e.key.toLowerCase() === 'r') this.generateRecipe();
+          if (e.key.toLowerCase() === 't') this.generateChefTip();
+          if (e.key.toLowerCase() === 'd') this.quickChallenge();
+        },
+
+        // PWA
+        async installPwa() {
+          if (this.deferredPrompt) {
+            this.deferredPrompt.prompt();
+            const { outcome } = await this.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              this.pwaStatus = 'Installation acceptée. L\'application va s\'installer.';
+              this.notify('Application installée !', 'is-success');
+            } else {
+              this.pwaStatus = 'Installation annulée.';
+            }
+            this.deferredPrompt = null;
+          } else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            this.pwaStatus = 'L\'application est déjà installée.';
+            this.notify(this.pwaStatus, 'is-info');
+          }
+          else {
+            this.pwaStatus = 'Le navigateur ne supporte pas l\'installation ou l\'événement n\'a pas encore été reçu. Réessayez dans quelques instants.';
+            this.notify('L\'application n\'est pas installable pour le moment.', 'is-warning');
+          }
+        }
+      },
+      created() {
+        // PWA Install Prompt
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('beforeinstallprompt', (e) => {
+            // e.preventDefault(); // Ne pas empêcher le prompt natif, mais garder une référence
+            this.deferredPrompt = e;
+            this.pwaStatus = 'Prêt pour l\'installation hors-ligne. Si vous refusez, vous pourrez le faire plus tard via le bouton.';
+          });
+
+          if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+            this.pwaStatus = 'L\'application est lancée en mode autonome (installée).';
+          } else {
+            this.pwaStatus = 'L\'application peut être installée pour un accès hors-ligne.';
+          }
+        } else {
+          this.pwaStatus = 'Service Worker non supporté, l\'installation hors-ligne est impossible.';
+        }
+
+        // Prefs santé
+        this.prefs = { lowSalt: false, lowSugar: false, highProtein: false };
+
+        // Charger données
+        this.loadAll();
+
+        // Init valeurs par défaut si vide
+        if (!this.recipes.length) {
+          // Une recette de départ
+          const starter = {
+            id: 'r_seed',
+            title: 'Couscous de légumes léger',
+            ingredients: ['Semoule', 'Carottes', 'Courgettes', 'Pois chiches', 'Tomates', 'Oignons', 'Epices (ras el hanout)', 'Huile d’olive', 'Sel'],
+            steps: ['Cuire la semoule à la vapeur','Préparer le bouillon épicé','Cuire les légumes','Assembler et servir'],
+            tags: ['Plat','Maghreb'],
+            calories: 650,
+            imageUrl: Pollinations.imageUrl('Photo couscous de légumes, halal, sain, style magazine, éclairage naturel', 960, 540)
+          };
+          this.recipes.push(starter);
+        }
+
+        window.addEventListener('keydown', this.handleHotkeys);
+      },
+      beforeUnmount() {
+        window.removeEventListener('keydown', this.handleHotkeys);
+      }
+    });
+
+    app.mount('#app');
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(registration => {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        }, err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "name": "MamaChef",
+  "short_name": "MamaChef",
+  "description": "Jeu sérieux de recettes, planning et bonnes pratiques",
+  "start_url": "/index.html",
+  "id": "MamaChef",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff3860",
+  "icons": [
+    {
+      "src": "images/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "images/screenshot-mobile.jpg",
+      "type": "image/jpeg",
+      "sizes": "412x920"
+    },
+    {
+      "src": "images/screenshot-desktop.jpg",
+      "type": "image/jpeg",
+      "sizes": "2560x1240",
+      "form_factor": "wide"
+    }
+  ]  
+}
