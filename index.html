@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MamaChef — Serious game for recipes, planning, and best practices</title>
+  <title>ماما شيف — لعبة جدية لوصفات الطهي والتخطيط والممارسات الأفضل</title>
+
+  <!-- تحميل خط Tadjwal -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -30,6 +35,7 @@
     }
     html, body {
       overflow-x: hidden;
+      font-family: 'Tajawal', sans-serif;
     }
     body {
       background: #fafafa;
@@ -108,7 +114,10 @@
     .overlay-hint {
       position: absolute;
       top: 8px;
-      right: 8px;
+      /* تم تغيير اليمين إلى اليسار للدعم الثنائي الاتجاه */
+      left: 8px;
+      /* تم تغيير اليسار إلى اليمين للدعم الثنائي الاتجاه */
+      right: auto;
       background: rgba(0,0,0,0.65);
       color: #fff;
       padding: 0.25rem 0.5rem;
@@ -135,6 +144,15 @@
       /* Compact tables */
       .table th, .table td { padding: 0.5rem 0.75rem; }
     }
+    /* RTL-specific styles */
+    .rtl-override {
+      direction: rtl;
+      text-align: right;
+    }
+    .ltr-input {
+      direction: ltr;
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -145,7 +163,7 @@
         <div class="navbar-brand">
           <a class="navbar-item" @click="view='home'; mobileNav=false">
             <span class="icon has-text-danger"><i class="fa-solid fa-utensils"></i></span>
-            <strong class="ml-2">MamaChef</strong>
+            <strong class="mr-2">ماما شيف</strong>
           </a>
           <a role="button"
              class="navbar-burger"
@@ -162,22 +180,22 @@
         <div class="navbar-menu" :class="{'is-active': mobileNav}">
           <div class="navbar-start">
             <a class="navbar-item" :class="{'has-text-danger': view==='home'}" @click="view='home'; mobileNav=false">
-              Home
+              الرئيسية
             </a>
             <a class="navbar-item" :class="{'has-text-danger': view==='recipes'}" @click="view='recipes'; mobileNav=false">
-              Recipes
+              الوصفات
             </a>
             <a class="navbar-item" :class="{'has-text-danger': view==='planning'}" @click="view='planning'; mobileNav=false">
-              Planning
+              التخطيط
             </a>
             <a class="navbar-item" :class="{'has-text-danger': view==='inventory'}" @click="view='inventory'; mobileNav=false">
-              Ingredients
+              المكونات
             </a>
             <a class="navbar-item" :class="{'has-text-danger': view==='tips'}" @click="view='tips'; mobileNav=false">
-              Chef Tips
+              نصائح الطهاة
             </a>
             <a class="navbar-item" :class="{'has-text-danger': view==='profile'}" @click="view='profile'; mobileNav=false">
-              Profile & Scores
+              الملف الشخصي والنتائج
             </a>
           </div>
 
@@ -185,8 +203,8 @@
             <div class="navbar-item">
               <div class="score-badge">
                 <span class="icon has-text-warning"><i class="fa-solid fa-star"></i></span>
-                <span>{{ totalScore }} pts</span>
-                <span class="tag is-danger is-light pill is-small ml-2">Level {{ level }}</span>
+                <span>{{ totalScore }} نقطة</span>
+                <span class="tag is-danger is-light pill is-small mr-2">المستوى {{ level }}</span>
               </div>
             </div>
           </div>
@@ -200,57 +218,57 @@
         <div class="container">
           <div class="columns is-vcentered">
             <div class="column">
-              <h1 class="title is-3 mb-2">Healthy & Balanced Recipes</h1>
+              <h1 class="title is-3 mb-2">وصفات صحية متوازنة</h1>
               <p class="subtitle has-text-dark">
-                Create, review, and plan your meals. Earn points, level up, and unlock culinary challenges from around the world.
+                أنشئ وراجع وخطّط لوجباتك. اربح النقاط وارتقِ بالمستوى وافتح تحديات طهي من جميع أنحاء العالم.
               </p>
 
               <div class="buttons">
                 <button class="button is-dark" @click="view='recipes'">
                   <span class="icon"><i class="fa-solid fa-bowl-food"></i></span>
-                  <span>Explore recipes</span>
+                  <span>استكشف الوصفات</span>
                 </button>
                 <button class="button is-danger" @click="quickChallenge()">
                   <span class="icon"><i class="fa-solid fa-bolt"></i></span>
-                  <span>Quick Challenge</span>
+                  <span>تحدي سريع</span>
                 </button>
                 <button class="button is-light" @click="generateChefTip()">
                   <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span>Chef's Tip</span>
+                  <span>نصيحة الطاهي</span>
                 </button>
               </div>
             </div>
             <div class="column">
               <div class="box">
-                <p class="title is-5 mb-2">Progress</p>
+                <p class="title is-5 mb-2">التقدم</p>
                 <progress class="progress is-danger is-thin" :value="progressPercent" max="100">{{ progressPercent }}%</progress>
                 <div class="columns is-variable is-1 mt-3">
                   <div class="column has-text-centered">
-                    <p class="heading">Recipes</p>
+                    <p class="heading">الوصفات</p>
                     <p class="title is-6">{{ recipes.length }}</p>
                   </div>
                   <div class="column has-text-centered">
-                    <p class="heading">Planning</p>
+                    <p class="heading">التخطيط</p>
                     <p class="title is-6">{{ plannedMealsCount }}</p>
                   </div>
                   <div class="column has-text-centered">
-                    <p class="heading">Tips read</p>
+                    <p class="heading">النصائح المقروءة</p>
                     <p class="title is-6">{{ tipsRead }}</p>
                   </div>
                   <div class="column has-text-centered">
-                    <p class="heading">Challenges</p>
+                    <p class="heading">التحديات</p>
                     <p class="title is-6">{{ challengesDone }}</p>
                   </div>
                 </div>
                 <p class="small mt-2">
-                  Next level target: {{ nextLevelTarget }} pts
+                  هدف المستوى التالي: {{ nextLevelTarget }} نقطة
                 </p>
               </div>
             </div>
           </div>
 
           <div class="notification is-light mt-2 has-text-dark is-hidden-mobile">
-            Tip: press <span class="kbd">R</span> to generate a recipe via AI, <span class="kbd">T</span> for a Chef's tip, <span class="kbd">D</span> for a challenge.
+            تلميح: اضغط على <span class="kbd">R</span> لتوليد وصفة عبر الذكاء الاصطناعي، <span class="kbd">T</span> للحصول على نصيحة من الطاهي، <span class="kbd">D</span> للحصول على تحدي.
           </div>
         </div>
       </div>
@@ -265,10 +283,10 @@
             <div class="column is-12">
               <article class="message is-info">
                 <div class="message-header">
-                  <p>Welcome to MamaChef</p>
+                  <p>مرحباً بك في ماما شيف</p>
                 </div>
                 <div class="message-body">
-                  Use the AI generator to create new balanced halal recipes, manage your ingredients, and plan your weekly meals. The more you cook healthily and plan effectively, the more points you earn and the higher you level up!
+                  استخدم مولد الذكاء الاصطناعي لإنشاء وصفات حلال متوازنة جديدة، وقم بإدارة مكوناتك، وخطّط لوجباتك الأسبوعية. كلما طهيت بشكل صحي وخطّطت بشكل فعّال، زادت النقاط التي تربحها وارتفع مستواك!
                 </div>
               </article>
             </div>
@@ -276,29 +294,29 @@
               <div class="card">
                 <header class="card-header">
                   <p class="card-header-title">
-                    AI Recipe Generation
+                    توليد وصفة بالذكاء الاصطناعي
                   </p>
                 </header>
                 <div class="card-content">
                   <div class="content">
-                    <label class="label">Prompt</label>
+                    <label class="label">مطالبة</label>
                     <div class="field has-addons">
                       <div class="control is-expanded">
-                        <input class="input"
+                        <input class="input ltr-input"
                                v-model="aiPrompt"
-                               placeholder="E.g.: Algerian main course, chicken, vegetables, 600 kcal max, halal" />
+                               placeholder="مثلاً: طبق رئيسي جزائري، دجاج، خضروات، 600 سعرة حرارية كحد أقصى، حلال" />
                       </div>
                       <div class="control">
                         <button class="button is-danger" :class="{'is-loading': aiLoading}" @click="generateRecipe()">
-                          Generate
+                          إنشاء
                         </button>
                       </div>
                     </div>
-                    <p class="help">The AI will propose a recipe, with calorie estimation and steps. Image generated automatically.</p>
+                    <p class="help">سيقترح الذكاء الاصطناعي وصفة مع تقدير السعرات الحرارية والخطوات. يتم إنشاء الصورة تلقائياً.</p>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="view='recipes'">View all recipes</a>
+                  <a class="card-footer-item" @click="view='recipes'">عرض جميع الوصفات</a>
                 </footer>
               </div>
             </div>
@@ -306,22 +324,22 @@
             <div class="column is-6">
               <div class="card">
                 <header class="card-header">
-                  <p class="card-header-title">Challenge of the day</p>
+                  <p class="card-header-title">تحدي اليوم</p>
                 </header>
                 <div class="card-content">
                   <div class="content">
                     <p><strong>{{ dailyChallenge.title }}</strong></p>
                     <p class="small">{{ dailyChallenge.desc }}</p>
                     <div class="tags mt-2">
-                      <span class="tag is-warning is-light">+{{ dailyChallenge.points }} pts</span>
-                      <span class="tag tag-halal">Halal</span>
-                      <span class="tag is-success is-light">Healthy</span>
+                      <span class="tag is-warning is-light">+{{ dailyChallenge.points }} نقطة</span>
+                      <span class="tag tag-halal">حلال</span>
+                      <span class="tag is-success is-light">صحي</span>
                     </div>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="completeDailyChallenge()">Validate</a>
-                  <a class="card-footer-item" @click="quickChallenge()">New challenge</a>
+                  <a class="card-footer-item" @click="completeDailyChallenge()">التحقق</a>
+                  <a class="card-footer-item" @click="quickChallenge()">تحدي جديد</a>
                 </footer>
               </div>
             </div>
@@ -331,33 +349,33 @@
         <!-- RECIPES -->
         <div v-show="view==='recipes'">
           <div class="level">
-            <div class="level-left">
+            <div class="level-right">
               <div class="level-item">
-                <p class="title is-5 has-text-dark">Recipes</p>
+                <p class="title is-5 has-text-dark">الوصفات</p>
               </div>
             </div>
             
-            <div class="level-right">
+            <div class="level-left">
               <div class="level-item">
                 <div class="field has-addons">
                   <p class="control is-expanded">
-                    <input class="input" v-model="searchRecipe" placeholder="Search for a recipe..." />
+                    <input class="input" v-model="searchRecipe" placeholder="البحث عن وصفة..." />
                   </p>
                   <p class="control">
                     <span class="select">
                       <select v-model="filterTag">
-                        <option value="">All</option>
-                        <option>Starter</option>
-                        <option>Main</option>
-                        <option>Dessert</option>
-                        <option>Snack</option>
+                        <option value="">الكل</option>
+                        <option>مقبّل</option>
+                        <option>رئيسي</option>
+                        <option>حلوى</option>
+                        <option>وجبة خفيفة</option>
                       </select>
                     </span>
                   </p>
                   <p class="control">
                     <button class="button is-danger" @click="generateRecipe()" :class="{'is-loading': aiLoading}">
                       <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                      <span class="is-hidden-mobile">New AI Recipe</span>
+                      <span class="is-hidden-mobile">وصفة جديدة بالذكاء الاصطناعي</span>
                     </button>
                   </p>
                 </div>
@@ -367,14 +385,14 @@
 
           <div class="columns is-multiline is-mobile-compact">
             <div class="column is-12" v-if="filteredRecipes.length===0">
-              <div class="notification is-light">No recipes for now. Try generating one using AI.</div>
+              <div class="notification is-light">لا توجد وصفات حالياً. حاول إنشاء واحدة باستخدام الذكاء الاصطناعي.</div>
             </div>
             <div v-for="r in filteredRecipes" :key="r.id" class="column is-12-tablet is-6-desktop">
               <div class="card">
                 <div class="card-image" v-if="r.imageUrl">
                   <figure class="image is-16by9 recipe-img">
                     <img :src="r.imageUrl" :alt="r.title" />
-                    <span class="overlay-hint">{{ r.calories || '?' }} kcal</span>
+                    <span class="overlay-hint">{{ r.calories || '?' }} سعرة</span>
                   </figure>
                 </div>
                 <header class="card-header">
@@ -385,42 +403,42 @@
                 <div class="card-content">
                   <div class="content">
                     <div class="tags">
-                      <span class="tag tag-halal">Halal</span>
+                      <span class="tag tag-halal">حلال</span>
                       <span class="tag is-link is-light" v-for="t in r.tags" :key="t">{{ t }}</span>
                     </div>
 
-                    <p class="small"><strong>Ingredients:</strong> {{ r.ingredients.join(', ') }}</p>
+                    <p class="small"><strong>المكونات:</strong> {{ r.ingredients.join(', ') }}</p>
 
                     <details class="mt-2">
-                      <summary class="pointer">Steps</summary>
+                      <summary class="pointer">الخطوات</summary>
                       <ol class="mt-2">
                         <li v-for="(s,idx) in r.steps" :key="idx">{{ s }}</li>
                       </ol>
                     </details>
 
                     <div class="columns is-mobile mt-3">
-                      <div class="column">
+                      <div class="column has-text-right">
                         <span class="icon-text">
                           <span class="icon has-text-danger"><i class="fa-solid fa-fire"></i></span>
-                          <span class="smaller">{{ r.calories || '?' }} kcal</span>
+                          <span class="smaller">{{ r.calories || '?' }} سعرة</span>
                         </span>
                       </div>
-                      <div class="column has-text-right">
+                      <div class="column">
                         <button class="button is-small is-light" @click="addToPlan(r)">
                           <span class="icon"><i class="fa-solid fa-calendar-plus"></i></span>
-                          <span>Plan</span>
+                          <span>تخطط</span>
                         </button>
-                        <button class="button is-small is-light ml-1" @click="cookRecipe(r)">
+                        <button class="button is-small is-light mr-1" @click="cookRecipe(r)">
                           <span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
-                          <span>Cooked</span>
+                          <span>تم الطهي</span>
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="editRecipe(r)">Edit</a>
-                  <a class="card-footer-item is-danger" @click="deleteRecipe(r)">Delete</a>
+                  <a class="card-footer-item" @click="editRecipe(r)">تعديل</a>
+                  <a class="card-footer-item is-danger" @click="deleteRecipe(r)">حذف</a>
                 </footer>
               </div>
             </div>
@@ -430,16 +448,16 @@
         <!-- PLANNING -->
         <div v-show="view==='planning'">
           <div class="level">
-            <div class="level-left">
+            <div class="level-right">
               <div class="level-item">
-                <p class="title is-5 has-text-dark">Meal planning (7 days)</p>
+                <p class="title is-5 has-text-dark">تخطط الوجبات (7 أيام)</p>
               </div>
             </div>
-            <div class="level-right">
+            <div class="level-left">
               <div class="level-item">
                 <button class="button is-light" @click="autoPlan()">
                   <span class="icon"><i class="fa-solid fa-shuffle"></i></span>
-                  <span>Auto-plan</span>
+                  <span>تخطط تلقائي</span>
                 </button>
               </div>
             </div>
@@ -449,10 +467,10 @@
             <div class="column is-12">
               <article class="message is-light">
                 <div class="message-body">
-                  Daily calorie goal:
+                  هدف السعرات الحرارية اليومي:
                   <input type="number" class="input is-inline-block" style="max-width: 120px"
                          v-model.number="dailyCalorieGoal" @change="saveAll()">
-                  kcal. Adjust your meals to stay within the desired range.
+                  سعرة. قم بتعديل وجباتك للبقاء ضمن النطاق المطلوب.
                 </div>
               </article>
             </div>
@@ -461,11 +479,11 @@
                 <table class="table is-fullwidth is-striped is-narrow">
                   <thead>
                     <tr>
-                      <th>Day</th>
-                      <th>Breakfast</th>
-                      <th>Lunch</th>
-                      <th>Dinner</th>
-                      <th>Calories (est.)</th>
+                      <th>اليوم</th>
+                      <th>الفطور</th>
+                      <th>الغداء</th>
+                      <th>العشاء</th>
+                      <th>السعرات (تقدير)</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -500,37 +518,37 @@
                         <div v-else class="has-text-grey">—</div>
                       </td>
                       <td class="has-text-dark">
-                        <span :class="calorieClass(dayCalories(idx))">{{ dayCalories(idx) }} / {{ dailyCalorieGoal }} kcal</span>
+                        <span :class="calorieClass(dayCalories(idx))">{{ dayCalories(idx) }} / {{ dailyCalorieGoal }} سعرة</span>
                       </td>
-                      <td class="has-text-right">
+                      <td class="has-text-left">
                         <div class="buttons are-small">
                           <div class="dropdown is-right" :class="{'is-active': openPlannerDropdown===idx}">
                             <div class="dropdown-trigger">
                               <button class="button is-light" @click="togglePlanner(idx)">
                                 <span class="icon"><i class="fa-solid fa-plus"></i></span>
-                                <span>Add</span>
+                                <span>إضافة</span>
                               </button>
                             </div>
                             <div class="dropdown-menu">
                               <div class="dropdown-content" style="max-height: 280px; overflow:auto;">
                                 <div class="dropdown-item">
-                                  <p class="small has-text-grey">Choose a recipe</p>
-                                  <input class="input is-small mb-2" v-model="plannerSearch" placeholder="Filter..." />
+                                  <p class="small has-text-grey">اختر وصفة</p>
+                                  <input class="input is-small mb-2" v-model="plannerSearch" placeholder="تصفية..." />
                                 </div>
                                 <a class="dropdown-item"
                                    v-for="rec in recipesFilteredByPlanner"
                                    :key="rec.id"
                                    @click="assignToDay(idx, rec)">
-                                  {{ rec.title }} <span class="tag is-light ml-2">{{ (rec.calories||'?') }} kcal</span>
+                                  {{ rec.title }} <span class="tag is-light mr-2">{{ (rec.calories||'?') }} سعرة</span>
                                 </a>
                                 <hr class="dropdown-divider">
-                                <a class="dropdown-item" @click="openPlannerDropdown=null">Close</a>
+                                <a class="dropdown-item" @click="openPlannerDropdown=null">إغلاق</a>
                               </div>
                             </div>
                           </div>
                           <button class="button is-light" @click="clearDay(idx)">
                             <span class="icon"><i class="fa-regular fa-trash-can"></i></span>
-                            <span>Clear</span>
+                            <span>مسح</span>
                           </button>
                         </div>
                       </td>
@@ -538,9 +556,9 @@
                   </tbody>
                   <tfoot>
                     <tr>
-                      <th>Total week</th>
+                      <th>إجمالي الأسبوع</th>
                       <th colspan="3"></th>
-                      <th>{{ weekCalories }} kcal</th>
+                      <th>{{ weekCalories }} سعرة</th>
                       <th></th>
                     </tr>
                   </tfoot>
@@ -554,38 +572,38 @@
         <div v-show="view==='inventory'">
           <div class="columns">
             <div class="column is-7">
-              <p class="title is-5 has-text-dark">Ingredient Management</p>
+              <p class="title is-5 has-text-dark">إدارة المكونات</p>
               <div class="box">
                 <div class="columns">
                   <div class="column">
-                    <input class="input" v-model="newIngredient.name" placeholder="Name (e.g., Chicken)" />
+                    <input class="input" v-model="newIngredient.name" placeholder="الاسم (مثلاً، دجاج)" />
                   </div>
                   <div class="column">
-                    <input class="input" v-model="newIngredient.category" placeholder="Category (meat, vegetable...)" />
+                    <input class="input" v-model="newIngredient.category" placeholder="الفئة (لحم، خضار...)" />
                   </div>
                 </div>
                 <div class="columns is-mobile">
                   <div class="column is-4">
                     <input class="input" type="number" min="0" v-model.number="newIngredient.kcal"
-                           placeholder="kcal / 100g" />
+                           placeholder="سعر حراري / 100جم" />
                   </div>
                   <div class="column is-4">
-                    <input class="input" v-model="newIngredient.unit" placeholder="Unit (g, ml, piece)" />
+                    <input class="input" v-model="newIngredient.unit" placeholder="الوحدة (جم، مل، قطعة)" />
                   </div>
                   <div class="column is-4">
-                    <button class="button is-danger is-fullwidth" @click="addIngredient()">Add</button>
+                    <button class="button is-danger is-fullwidth" @click="addIngredient()">إضافة</button>
                   </div>
                 </div>
               </div>
 
               <div class="field has-addons">
                 <div class="control is-expanded">
-                  <input class="input" v-model="ingredientSearch" placeholder="Search for an ingredient..." />
+                  <input class="input" v-model="ingredientSearch" placeholder="البحث عن مكون..." />
                 </div>
                 <div class="control">
                   <div class="select">
                     <select v-model="ingredientFilter">
-                      <option value="">All categories</option>
+                      <option value="">جميع الفئات</option>
                       <option v-for="c in ingredientCategories" :key="c" :value="c">{{ c }}</option>
                     </select>
                   </div>
@@ -596,10 +614,10 @@
                 <table class="table is-striped is-fullwidth is-narrow">
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Category</th>
-                      <th>kcal/100g</th>
-                      <th>Unit</th>
+                      <th>الاسم</th>
+                      <th>الفئة</th>
+                      <th>السعرات/100جم</th>
+                      <th>الوحدة</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -609,7 +627,7 @@
                       <td>{{ ing.category }}</td>
                       <td>{{ ing.kcal }}</td>
                       <td>{{ ing.unit }}</td>
-                      <td class="has-text-right">
+                      <td class="has-text-left">
                         <button class="button is-small is-light" @click="editIngredient(ing)">
                           <span class="icon"><i class="fa-regular fa-pen-to-square"></i></span>
                         </button>
@@ -624,18 +642,17 @@
 
               <article class="message is-info">
                 <div class="message-body smaller">
-                  Tip: you can link ingredients to a recipe when editing it to
-                  estimate calories more accurately.
+                  تلميح: يمكنك ربط المكونات بوصفة عند تعديلها لتقدير السعرات الحرارية بدقة أكبر.
                 </div>
               </article>
             </div>
 
             <div class="column is-5">
-              <p class="title is-6 has-text-dark">Shopping Cart</p>
+              <p class="title is-6 has-text-dark">سلة التسوق</p>
               <div class="box">
                 <div class="field has-addons">
                   <div class="control is-expanded">
-                    <input class="input" v-model="shoppingItem" placeholder="Add to cart..." />
+                    <input class="input" v-model="shoppingItem" placeholder="إضافة إلى السلة..." />
                   </div>
                   <div class="control">
                     <button class="button is-light" @click="addToShopping()">
@@ -648,44 +665,44 @@
                   <li v-for="(it, idx) in shoppingList" :key="idx" class="mb-2">
                     <label class="checkbox">
                       <input type="checkbox" v-model="it.done" @change="saveAll()" />
-                      <span :class="{'has-text-grey-light': it.done}" class="ml-2">{{ it.name }}</span>
+                      <span :class="{'has-text-grey-light': it.done}" class="mr-2">{{ it.name }}</span>
                     </label>
-                    <button class="button is-very-small is-white ml-2" title="Delete" @click="removeShopping(idx)">
+                    <button class="button is-very-small is-white mr-2" title="حذف" @click="removeShopping(idx)">
                       <span class="icon has-text-danger"><i class="fa-regular fa-trash-can"></i></span>
                     </button>
                   </li>
                 </ul>
                 <button class="button is-light is-fullwidth mt-2" @click="shoppingList=[]; saveAll()">
-                  Empty cart
+                  تفريغ السلة
                 </button>
               </div>
 
-              <p class="title is-6 has-text-dark">Health goals</p>
+              <p class="title is-6 has-text-dark">أهداف الصحة</p>
               <div class="box">
-                <label class="label">Preferences</label>
+                <label class="label">التفضيلات</label>
                 <div class="field">
                   <label class="checkbox">
-                    <input type="checkbox" v-model="prefs.lowSalt" @change="saveAll()"> Low salt
+                    <input type="checkbox" v-model="prefs.lowSalt" @change="saveAll()"> منخفض الملح
                   </label>
                 </div>
                 <div class="field">
                   <label class="checkbox">
-                    <input type="checkbox" v-model="prefs.lowSugar" @change="saveAll()"> Low sugar
+                    <input type="checkbox" v-model="prefs.lowSugar" @change="saveAll()"> منخفض السكر
                   </label>
                 </div>
                 <div class="field">
                   <label class="checkbox">
-                    <input type="checkbox" v-model="prefs.highProtein" @change="saveAll()"> High protein
+                    <input type="checkbox" v-model="prefs.highProtein" @change="saveAll()"> عالي البروتين
                   </label>
                 </div>
               </div>
 
               <article class="message is-success">
                 <div class="message-header">
-                  <p>Halal and healthy</p>
+                  <p>حلال وصحي</p>
                 </div>
                 <div class="message-body smaller">
-                  All generated recipes are suggested as halal by default. However, always check your ingredients and labels.
+                  جميع الوصفات المولدة تقترح أنها حلال بشكل افتراضي. ومع ذلك، تأكد دائمًا من مكوناتك وملصقاتها.
                 </div>
               </article>
             </div>
@@ -695,16 +712,16 @@
         <!-- TIPS -->
         <div v-show="view==='tips'">
           <div class="level">
-            <div class="level-left">
+            <div class="level-right">
               <div class="level-item">
-                <p class="title is-5 has-text-dark">Chef's tips and best practices</p>
+                <p class="title is-5 has-text-dark">نصائح الطهاة والممارسات الأفضل</p>
               </div>
             </div>
-            <div class="level-right">
+            <div class="level-left">
               <div class="level-item">
                 <button class="button is-danger" :class="{'is-loading': tipLoading}" @click="generateChefTip()">
                   <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span>New AI tip</span>
+                  <span>نصيحة جديدة بالذكاء الاصطناعي</span>
                 </button>
               </div>
             </div>
@@ -712,12 +729,12 @@
 
           <div class="columns is-multiline">
             <div class="column is-12" v-if="tips.length===0">
-              <div class="notification is-light">Ask for a tip to get started.</div>
+              <div class="notification is-light">اطلب نصيحة للبدء.</div>
             </div>
             <div class="column is-12" v-for="(tip, idx) in tips" :key="idx">
               <article class="message is-info">
                 <div class="message-header">
-                  <p>Tip #{{ idx+1 }}</p>
+                  <p>نصيحة #{{ idx+1 }}</p>
                   <button class="delete" @click="removeTip(idx)"></button>
                 </div>
                 <div class="message-body">
@@ -737,41 +754,41 @@
             <div class="column is-7">
               <div class="card">
                 <header class="card-header">
-                  <p class="card-header-title">Profile & progress</p>
+                  <p class="card-header-title">الملف الشخصي والتقدم</p>
                 </header>
                 <div class="card-content">
                   <div class="content">
-                    <p><strong>Name:</strong> <input class="input is-inline-block" style="max-width: 260px"
-                      v-model="profile.name" @change="saveAll()" placeholder="Your name" /></p>
-                    <p><strong>Level:</strong> {{ level }}</p>
-                    <p><strong>Total score:</strong> {{ totalScore }} pts</p>
+                    <p><strong>الاسم:</strong> <input class="input is-inline-block ltr-input" style="max-width: 260px"
+                      v-model="profile.name" @change="saveAll()" placeholder="اسمك" /></p>
+                    <p><strong>المستوى:</strong> {{ level }}</p>
+                    <p><strong>النتيجة الإجمالية:</strong> {{ totalScore }} نقطة</p>
                     <progress class="progress is-danger" :value="progressPercent" max="100">{{ progressPercent }}%</progress>
 
                     <div class="columns">
                       <div class="column">
-                        <p class="heading">Recipes cooked</p>
+                        <p class="heading">الوصفات المطهية</p>
                         <p class="title is-5">{{ stats.cooked }}</p>
                       </div>
                       <div class="column">
-                        <p class="heading">Planning filled</p>
+                        <p class="heading">التخطيط المعبأ</p>
                         <p class="title is-5">{{ plannedMealsCount }}</p>
                       </div>
                       <div class="column">
-                        <p class="heading">Challenges completed</p>
+                        <p class="heading">التحديات المكتملة</p>
                         <p class="title is-5">{{ challengesDone }}</p>
                       </div>
                     </div>
 
-                    <p class="small">Unlock badges by completing challenges and meeting your calorie goals.</p>
+                    <p class="small">افتح الشارات عن طريق إكمال التحديات والوصول إلى أهداف السعرات الحرارية.</p>
                     <div class="tags mt-2">
                       <span class="tag is-warning is-light" v-for="b in badges" :key="b">{{ b }}</span>
                     </div>
                   </div>
                 </div>
                 <footer class="card-footer">
-                  <a class="card-footer-item" @click="exportData()">Export data</a>
-                  <a class="card-footer-item" @click="importDialogOpen=true">Import</a>
-                  <a class="card-footer-item is-danger" @click="clearAll()">Clear all data</a>
+                  <a class="card-footer-item" @click="exportData()">تصدير البيانات</a>
+                  <a class="card-footer-item" @click="importDialogOpen=true">استيراد</a>
+                  <a class="card-footer-item is-danger" @click="clearAll()">مسح جميع البيانات</a>
                 </footer>
               </div>
             </div>
@@ -779,25 +796,25 @@
             <div class="column is-5">
               <div class="card is-hidden-mobile">
                 <header class="card-header">
-                  <p class="card-header-title">Shortcuts</p>
+                  <p class="card-header-title">الاختصارات</p>
                 </header>
                 <div class="card-content">
                   <ul>
-                    <li><span class="kbd">R</span> Generate an AI recipe</li>
-                    <li><span class="kbd">T</span> Generate an AI tip</li>
-                    <li><span class="kbd">D</span> Quick challenge</li>
+                    <li><span class="kbd">R</span> إنشاء وصفة بالذكاء الاصطناعي</li>
+                    <li><span class="kbd">T</span> إنشاء نصيحة بالذكاء الاصطناعي</li>
+                    <li><span class="kbd">D</span> تحدي سريع</li>
                   </ul>
                 </div>
               </div>
 
               <div class="card mt-4">
                 <header class="card-header">
-                  <p class="card-header-title">Settings</p>
+                  <p class="card-header-title">الإعدادات</p>
                 </header>
                 <div class="card-content">
                   <button class="button is-link is-light" @click="installPwa()">
                     <span class="icon"><i class="fa-solid fa-download"></i></span>
-                    <span>Install the application</span>
+                    <span>تثبيت التطبيق</span>
                   </button>
                   <p class="small has-text-grey mt-2">{{ pwaStatus }}</p>
                 </div>
@@ -805,11 +822,11 @@
 
               <div class="card mt-4">
                 <header class="card-header">
-                  <p class="card-header-title">About</p>
+                  <p class="card-header-title">حول</p>
                 </header>
                 <div class="card-content">
                   <p class="small">
-                    This serious game uses public AI services to generate text and images. The contents are suggestions and should be adapted to your nutritional needs and beliefs.
+                    تستخدم هذه اللعبة الجادة خدمات الذكاء الاصطناعي العامة لإنشاء النصوص والصور. المحتويات اقتراحات ويجب تكييفها مع احتياجاتك الغذائية وإيمانك.
                   </p>
                 </div>
               </div>
@@ -829,32 +846,32 @@
               <p class="control">
                 <a class="button is-danger" @click="generateRecipe()" :class="{'is-loading': aiLoading}">
                   <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                  <span class="is-hidden-mobile">AI Recipe</span>
+                  <span class="is-hidden-mobile">وصفة بالذكاء الاصطناعي</span>
                 </a>
               </p>
               <p class="control">
                 <a class="button is-dark" @click="generateChefTip()" :class="{'is-loading': tipLoading}">
                   <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span class="is-hidden-mobile">AI Tip</span>
+                  <span class="is-hidden-mobile">نصيحة بالذكاء الاصطناعي</span>
                 </a>
               </p>
               <p class="control">
                 <a class="button" @click="quickChallenge()">
                   <span class="icon"><i class="fa-solid fa-bolt"></i></span>
-                  <span class="is-hidden-mobile">Challenge</span>
+                  <span class="is-hidden-mobile">تحدي</span>
                 </a>
               </p>
               <p class="control is-expanded">
-                <input class="input" v-model="aiPrompt" placeholder="AI Prompt (e.g., light couscous 500 kcal, halal)" />
+                <input class="input ltr-input" v-model="aiPrompt" placeholder="مطالبة الذكاء الاصطناعي (مثلاً، كوسكوس خفيف 500 سعرة، حلال)" />
               </p>
             </div>
           </div>
-          <div class="column is-12-mobile is-4-tablet has-text-centered-mobile has-text-right-tablet">
+          <div class="column is-12-mobile is-4-tablet has-text-centered-mobile has-text-left-tablet">
             <span class="icon-text">
               <span class="icon has-text-danger"><i class="fa-solid fa-star"></i></span>
-              <span>{{ totalScore }} pts</span>
+              <span>{{ totalScore }} نقطة</span>
             </span>
-            <span class="tag is-danger is-light pill ml-2">Level {{ level }}</span>
+            <span class="tag is-danger is-light pill mr-2">المستوى {{ level }}</span>
           </div>
         </div>
       </div>
@@ -867,7 +884,7 @@
       <div class="modal-background" @click="editRecipeModal=false"></div>
       <div class="modal-card" style="width: 920px; max-width: 95vw;">
         <header class="modal-card-head">
-          <p class="modal-card-title">Edit Recipe</p>
+          <p class="modal-card-title">تعديل الوصفة</p>
           <button class="delete" aria-label="close" @click="editRecipeModal=false"></button>
         </header>
         <section class="modal-card-body">
@@ -875,35 +892,35 @@
             <div class="columns">
               <div class="column is-7">
                 <div class="field">
-                  <label class="label">Title</label>
+                  <label class="label">العنوان</label>
                   <input class="input" v-model="editingRecipe.title" />
                 </div>
                 <div class="field">
-                  <label class="label">Tags</label>
-                  <input class="input" v-model="tagsBuffer" placeholder="Separated by commas (e.g., Main, Maghreb)" />
+                  <label class="label">الوسوم</label>
+                  <input class="input" v-model="tagsBuffer" placeholder="مفصولة بفواصل (مثلاً، رئيسي، مغربي)" />
                 </div>
                 <div class="field">
-                  <label class="label">Calories (estimated)</label>
+                  <label class="label">السعرات (تقديرية)</label>
                   <input class="input" type="number" v-model.number="editingRecipe.calories" />
                 </div>
                 <div class="field">
-                  <label class="label">Steps (one per line)</label>
+                  <label class="label">الخطوات (واحدة في كل سطر)</label>
                   <textarea class="textarea" rows="6" v-model="stepsBuffer"></textarea>
                 </div>
               </div>
               <div class="column is-5">
                 <div class="field">
-                  <label class="label">Ingredients (one per line)</label>
+                  <label class="label">المكونات (واحدة في كل سطر)</label>
                   <textarea class="textarea" rows="6" v-model="ingredientsBuffer"></textarea>
                 </div>
                 <div class="field">
-                  <label class="label">Image (auto-generated, can be regenerated)</label>
+                  <label class="label">الصورة (توليد تلقائي، يمكن إعادته)</label>
                   <figure class="image is-16by9 recipe-img" v-if="editingRecipe.imageUrl">
                     <img :src="editingRecipe.imageUrl" :alt="editingRecipe.title" />
                   </figure>
                   <button class="button is-light mt-2" @click="regenImageFor(editingRecipe)">
                     <span class="icon"><i class="fa-solid fa-image"></i></span>
-                    <span>Regenerate image</span>
+                    <span>إعادة توليد الصورة</span>
                   </button>
                 </div>
               </div>
@@ -911,8 +928,8 @@
           </div>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-danger" @click="saveEditingRecipe()">Save</button>
-          <button class="button" @click="editRecipeModal=false">Close</button>
+          <button class="button is-danger" @click="saveEditingRecipe()">حفظ</button>
+          <button class="button" @click="editRecipeModal=false">إغلاق</button>
         </footer>
       </div>
     </div>
@@ -922,16 +939,16 @@
       <div class="modal-background" @click="importDialogOpen=false"></div>
       <div class="modal-card" style="width: 760px; max-width: 95vw;">
         <header class="modal-card-head">
-          <p class="modal-card-title">Import data</p>
+          <p class="modal-card-title">استيراد البيانات</p>
           <button class="delete" aria-label="close" @click="importDialogOpen=false"></button>
         </header>
         <section class="modal-card-body">
-          <p class="small">Paste the previously exported data here.</p>
-          <textarea class="textarea" rows="10" v-model="importBuffer" placeholder='{"recipes":[...], ...}'></textarea>
+          <p class="small">الصق البيانات المُصدرة مسبقًا هنا.</p>
+          <textarea class="textarea ltr-input" rows="10" v-model="importBuffer" placeholder='{"recipes":[...], ...}'></textarea>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-danger" @click="performImport()">Import</button>
-          <button class="button" @click="importDialogOpen=false">Cancel</button>
+          <button class="button is-danger" @click="performImport()">استيراد</button>
+          <button class="button" @click="importDialogOpen=false">إلغاء</button>
         </footer>
       </div>
     </div>
@@ -993,7 +1010,7 @@
           tagsBuffer: '',
 
           // Planning
-          weekDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+          weekDays: ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
           planning: Array.from({length: 7}, () => ({ breakfast: null, lunch: null, dinner: null })),
           dailyCalorieGoal: 1800,
           openPlannerDropdown: null,
@@ -1012,7 +1029,7 @@
           tipsRead: 0,
 
           // Challenges
-          dailyChallenge: { title: 'Cook a seasonal dish', desc: 'Use at least 2 seasonal vegetables.', points: 20 },
+          dailyChallenge: { title: 'اطبخ طبقًا موسميًا', desc: 'استخدم ما لا يقل عن خضروتين موسميتين.', points: 20 },
           challengesDone: 0,
 
           // Profile & progress
@@ -1137,7 +1154,7 @@
               this[k] = data[k];
             }
           } catch(e) {
-            console.warn('Corrupted data, resetting.');
+            console.warn('البيانات تالفة، يتم إعادة تعيينها.');
           }
         },
         exportData() {
@@ -1158,13 +1175,13 @@
             localStorage.setItem('mamachef:data', JSON.stringify(obj));
             this.loadAll();
             this.importDialogOpen = false;
-            this.notify('Import successful.', 'is-success');
+            this.notify('تم الاستيراد بنجاح.', 'is-success');
           } catch(e) {
-            this.notify('Invalid import.', 'is-danger');
+            this.notify('استيراد غير صالح.', 'is-danger');
           }
         },
         clearAll() {
-          if (!confirm('Clear all local data and start over?')) return;
+          if (!confirm('هل تريد مسح جميع البيانات المحلية والبدء من جديد؟')) return;
           localStorage.removeItem('mamachef:data');
           location.reload();
         },
@@ -1175,7 +1192,7 @@
           n.className = `notification ${type}`;
           n.textContent = msg;
           n.style.position = 'fixed';
-          n.style.right = '12px';
+          n.style.left = '12px';
           n.style.bottom = '12px';
           n.style.zIndex = '9999';
           document.body.appendChild(n);
@@ -1190,10 +1207,10 @@
         },
         checkBadges() {
           const push = (b) => { if (!this.badges.includes(b)) this.badges.push(b); };
-          if (this.stats.cooked >= 1) push('First recipe');
-          if (this.plannedMealsCount >= 7) push('Full week');
-          if (this.tipsRead >= 3) push('Apprentice Chef');
-          if (this.totalScore >= 250) push('Motivated');
+          if (this.stats.cooked >= 1) push('وصفة أولى');
+          if (this.plannedMealsCount >= 7) push('أسبوع كامل');
+          if (this.tipsRead >= 3) push('طاهي متعلم');
+          if (this.totalScore >= 250) push('متحمس');
           this.saveAll();
         },
 
@@ -1202,10 +1219,13 @@
           try {
             this.aiLoading = true;
             const basePrompt = this.aiPrompt && this.aiPrompt.trim() ? this.aiPrompt.trim() :
-              "Suggest a balanced halal recipe in English for a household, 500 to 700 kcal per serving, "
-              +"with title, list of ingredients, clear steps (4 to 8), tags (Starter/Main/Dessert/Snack), "
-              +"and calorie estimation. Concise style.";
-            const promptText = `Generate a structured recipe in compact JSON format: { "title": "", "ingredients": ["..."], "steps": ["..."], "tags": ["Main"], "calories": 600 }.\nExclusively JSON.\nHalal and healthy constraint.\nRequest: ${basePrompt}`;
+              "اقترح وصفة حلال متوازنة باللغة العربية لربة منزل، 500 إلى 700 سعرة حرارية لكل وجبة، "
+              +"مع عنوان، قائمة المكونات، خطوات واضحة (4 إلى 8)، وسوم (مقبلات/رئيسي/حلوى/وجبة خفيفة)، "
+              +"وتقدير السعرات. نمط مختصر.";
+            const promptText = `Generate a structured recipe in compact JSON format: { "title": "", "ingredients": ["..."], "steps": ["..."], "tags": ["Main"], "calories": 600 }.
+Exclusively JSON.
+Halal and healthy constraint.
+Request: ${basePrompt}`;
             const txt = await Pollinations.fetchText(promptText);
             let parsed = null;
             if (txt) {
@@ -1218,16 +1238,16 @@
             if (!parsed) {
               // Local fallback
               parsed = {
-                title: 'Grilled chicken salad with herbs',
-                ingredients: ['Chicken', 'Green salad', 'Tomatoes', 'Cucumber', 'Lemon', 'Olive oil', 'Herbs', 'Salt'],
-                steps: ['Grill the chicken', 'Cut the vegetables', 'Mix and season', 'Serve fresh'],
-                tags: ['Main'],
+                title: 'سلطة دجاج مشوي مع الأعشاب',
+                ingredients: ['دجاج', 'سلطة خضراء', 'طماطم', 'خيار', 'ليمون', 'زيت زيتون', 'أعشاب', 'ملح'],
+                steps: ['شوي الدجاج', 'تقطيع الخضروات', 'تتبيل وتقديم', 'تقديم الطازج'],
+                tags: ['رئيسي'],
                 calories: 620
               };
             }
             const recipe = {
               id: 'r_' + Date.now(),
-              title: parsed.title || 'Halal recipe',
+              title: parsed.title || 'وصفة حلال',
               ingredients: Array.isArray(parsed.ingredients) ? parsed.ingredients : [],
               steps: Array.isArray(parsed.steps) ? parsed.steps : [],
               tags: Array.isArray(parsed.tags) ? parsed.tags : ['Main'],
@@ -1242,25 +1262,25 @@
             this.addScore(10); // recipe creation
             this.saveAll();
             this.view = 'recipes';
-            this.notify('Recipe generated!', 'is-success');
+            this.notify('تم إنشاء الوصفة!', 'is-success');
           } catch(e) {
             console.error(e);
-            this.notify("Could not generate the recipe right now.", 'is-danger');
+            this.notify("لا يمكن إنشاء الوصفة الآن.", 'is-danger');
           } finally {
             this.aiLoading = false;
           }
         },
         editRecipe(r) {
           this.editingRecipe = JSON.parse(JSON.stringify(r));
-          this.ingredientsBuffer = (this.editingRecipe.ingredients || []).join('\n');
-          this.stepsBuffer = (this.editingRecipe.steps || []).join('\n');
+          this.ingredientsBuffer = (this.editingRecipe.ingredients || []).join('');
+          this.stepsBuffer = (this.editingRecipe.steps || []).join('');
           this.tagsBuffer = (this.editingRecipe.tags || []).join(', ');
           this.editRecipeModal = true;
         },
         saveEditingRecipe() {
           if (!this.editingRecipe) return;
-          this.editingRecipe.ingredients = this.ingredientsBuffer.split('\n').map(s => s.trim()).filter(Boolean);
-          this.editingRecipe.steps = this.stepsBuffer.split('\n').map(s => s.trim()).filter(Boolean);
+          this.editingRecipe.ingredients = this.ingredientsBuffer.split('').map(s => s.trim()).filter(Boolean);
+          this.editingRecipe.steps = this.stepsBuffer.split('').map(s => s.trim()).filter(Boolean);
           this.editingRecipe.tags = this.tagsBuffer.split(',').map(s => s.trim()).filter(Boolean);
           const idx = this.recipes.findIndex(r => r.id === this.editingRecipe.id);
           if (idx >= 0) {
@@ -1269,10 +1289,10 @@
           this.editRecipeModal = false;
           this.editingRecipe = null;
           this.saveAll();
-          this.notify('Recipe updated.', 'is-success');
+          this.notify('تم تحديث الوصفة.', 'is-success');
         },
         deleteRecipe(r) {
-          if (!confirm('Delete this recipe?')) return;
+          if (!confirm('هل تريد حذف هذه الوصفة؟')) return;
           this.recipes = this.recipes.filter(x => x.id !== r.id);
           this.saveAll();
         },
@@ -1291,7 +1311,7 @@
           this.stats.cooked++;
           this.addScore(8);
           this.saveAll();
-          this.notify('Well done! Recipe cooked. +8 pts', 'is-success');
+          this.notify('أحسنت! تم طهي الوصفة. +8 نقاط', 'is-success');
         },
 
         // PLANNING
@@ -1325,7 +1345,7 @@
         },
         autoPlan() {
           if (this.recipes.length === 0) {
-            this.notify('No recipes available.', 'is-warning');
+            this.notify('لا توجد وصفات متاحة.', 'is-warning');
             return;
           }
           const pick = () => this.recipes[Math.floor(Math.random()*this.recipes.length)];
@@ -1338,7 +1358,7 @@
           }
           this.addScore(5);
           this.saveAll();
-          this.notify('Auto-generated planning!', 'is-success');
+          this.notify('تم إنشاء التخطيط تلقائيًا!', 'is-success');
         },
         addToPlan(r) {
           // Adds to the first free day/slot
@@ -1349,11 +1369,11 @@
               this.planning[i][free] = { id: r.id, title: r.title, calories: r.calories||0 };
               this.addScore(2);
               this.saveAll();
-              this.notify(`Added to ${this.weekDays[i]} (${free}).`, 'is-success');
+              this.notify(`تمت الإضافة إلى ${this.weekDays[i]} (${free}).`, 'is-success');
               return;
             }
           }
-          this.notify('No free slots. Open the planning to adjust.', 'is-warning');
+          this.notify('لا توجد فترات زمنية فارغة. افتح التخطيط لإجراء التعديلات.', 'is-warning');
         },
 
         // INGREDIENTS
@@ -1363,22 +1383,22 @@
           this.ingredients.push({
             id: 'i_' + Date.now() + '_' + Math.floor(Math.random()*9999),
             name: n.name.trim(),
-            category: n.category.trim() || 'Other',
+            category: n.category.trim() || 'أخرى',
             kcal: Number(n.kcal)||0,
-            unit: n.unit.trim() || 'g'
+            unit: n.unit.trim() || 'جم'
           });
           this.newIngredient = { name: '', category: '', kcal: 0, unit: '' };
           this.addScore(1);
           this.saveAll();
         },
         editIngredient(ing) {
-          const name = prompt('Name:', ing.name);
+          const name = prompt('الاسم:', ing.name);
           if (name===null) return;
-          const category = prompt('Category:', ing.category);
+          const category = prompt('الفئة:', ing.category);
           if (category===null) return;
-          const kcal = prompt('kcal/100g:', ing.kcal);
+          const kcal = prompt('السعرات/100جم:', ing.kcal);
           if (kcal===null) return;
-          const unit = prompt('Unit:', ing.unit);
+          const unit = prompt('الوحدة:', ing.unit);
           if (unit===null) return;
           ing.name = name.trim();
           ing.category = category.trim();
@@ -1387,7 +1407,7 @@
           this.saveAll();
         },
         deleteIngredient(ing) {
-          if (!confirm('Delete this ingredient?')) return;
+          if (!confirm('هل تريد حذف هذا المكون؟')) return;
           this.ingredients = this.ingredients.filter(x => x.id !== ing.id);
           this.saveAll();
         },
@@ -1409,12 +1429,12 @@
             this.tipLoading = true;
             
             const prefText = [
-              this.prefs.lowSalt ? 'low in salt' : null,
-              this.prefs.lowSugar ? 'low in sugar' : null,
-              this.prefs.highProtein ? 'high in protein' : null
-            ].filter(Boolean).join(', ') || 'balanced';
+              this.prefs.lowSalt ? 'منخفض الملح' : null,
+              this.prefs.lowSugar ? 'منخفض السكر' : null,
+              this.prefs.highProtein ? 'عالي البروتين' : null
+            ].filter(Boolean).join(', ') || 'متوازن';
 
-            let prompt = `Give a new Chef's tip in English (${parseInt((1+Math.random())*2)}-${parseInt((1+Math.random())*3)} sentences) on ${prefText} cooking. Add 3 relevant tags. Response in JSON: {"text":"...", "tags":["...","...","..."]}.`;
+            let prompt = `أعط نصيحة طاهٍ جديدة باللغة العربية (${parseInt((1+Math.random())*2)}-${parseInt((1+Math.random())*3)} جمل) عن طهي ${prefText}. أضف 3 وسوم ذات صلة. الرد بتنسيق JSON: {"text":"...", "tags":["...","...","..."]}.`;
             if (this.recipes.length){
                 const randomRecipe = this.recipes[Math.floor(Math.random() * this.recipes.length)];
                 prompt += ` Recipe: "${randomRecipe.title}". Ingredients [${randomRecipe.ingredients.join(', ')}].`;
@@ -1428,16 +1448,16 @@
               }
             }
             if (!tip) {
-              tip = { text: "Prepare your marinades in advance with mild spices and lemon to enhance halal meats. Limit salt and compensate with fresh herbs and citrus fruits.", tags: ['Halal','Marinade','Health'] };
+              tip = { text: "حضّر مكونات التتبيل مقدماً مع توابل خفيفة وليمون لتحسين اللحوم الحلال. قلل من الملح وعوضه بالأعشاب الطازجة وفواكه الحمضيات.", tags: ['حلال','تتبيل','صحة'] };
             }
             this.tips.unshift(tip);
             this.tipsRead++;
             this.addScore(4);
             this.saveAll();
-            this.notify('Tip added!', 'is-success');
+            this.notify('تمت إضافة النصيحة!', 'is-success');
           } catch(e) {
             console.error(e);
-            this.notify("Could not get a tip right now.", 'is-danger');
+            this.notify("لا يمكن الحصول على نصيحة الآن.", 'is-danger');
           } finally {
             this.tipLoading = false;
           }
@@ -1450,21 +1470,21 @@
         // CHALLENGES
         quickChallenge() {
           const challenges = [
-            { title: '600 kcal menu', desc: 'Compose a lunch of around 600 kcal ±100.', points: 15 },
-            { title: 'Zero waste', desc: 'Cook by reusing a leftover from the fridge.', points: 12 },
-            { title: 'Green & Protein', desc: 'Include 2 green vegetables and a source of protein.', points: 18 },
-            { title: 'Hydration', desc: 'Serve 2 glasses of water with each meal of the day.', points: 8 },
-            { title: 'Batch cooking', desc: 'Plan and prepare 2 meals in advance.', points: 20 },
+            { title: 'قائمة 600 سعرة', desc: 'ألف وجبة غداء بحوالي 600 سعرة ±100.', points: 15 },
+            { title: 'صفر نفايات', desc: 'اطبخ باستخدام بقايا الطعام من الثلاجة.', points: 12 },
+            { title: 'خضراء وبروتين', desc: 'تضم مكونان أخضران ومصدر بروتين.', points: 18 },
+            { title: 'ت_hidratation', desc: 'قدم كوبين من الماء مع كل وجبة يوم.', points: 8 },
+            { title: 'طهي بالدفعة', desc: 'خطّط وحضّر وجبتين مقدماً.', points: 20 },
           ];
           this.dailyChallenge = challenges[Math.floor(Math.random()*challenges.length)];
           this.view = 'home';
-          this.notify('New challenge available!', 'is-info');
+          this.notify('تحدي جديد متاح!', 'is-info');
         },
         completeDailyChallenge() {
           this.addScore(this.dailyChallenge.points);
           this.challengesDone++;
           this.saveAll();
-          this.notify(`Challenge validated! +${this.dailyChallenge.points} pts`, 'is-success');
+          this.notify(`تم التحقق من التحدي! +${this.dailyChallenge.points} نقطة`, 'is-success');
         },
 
         // MISC
@@ -1481,19 +1501,19 @@
             this.deferredPrompt.prompt();
             const { outcome } = await this.deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-              this.pwaStatus = 'Installation accepted. The application will be installed.';
-              this.notify('Application installed!', 'is-success');
+              this.pwaStatus = 'تم قبول التثبيت. سيتم تثبيت التطبيق.';
+              this.notify('تم تثبيت التطبيق!', 'is-success');
             } else {
-              this.pwaStatus = 'Installation canceled.';
+              this.pwaStatus = 'تم إلغاء التثبيت.';
             }
             this.deferredPrompt = null;
           } else if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            this.pwaStatus = 'The application is already installed.';
+            this.pwaStatus = 'التطبيق مثبت بالفعل.';
             this.notify(this.pwaStatus, 'is-info');
           }
           else {
-            this.pwaStatus = 'The browser does not support installation or the event has not yet been received. Try again in a few moments.';
-            this.notify('The application is not installable at the moment.', 'is-warning');
+            this.pwaStatus = 'المتصفح لا يدعم التثبيت أو لم يتم تلقي الحدث بعد. حاول مرة أخرى بعد قليل.';
+            this.notify('لا يمكن تثبيت التطبيق في الوقت الحالي.', 'is-warning');
           }
         }
       },
@@ -1503,16 +1523,16 @@
           window.addEventListener('beforeinstallprompt', (e) => {
             // e.preventDefault(); // Do not prevent the native prompt, but keep a reference
             this.deferredPrompt = e;
-            this.pwaStatus = 'Ready for offline installation. If you decline, you can do it later via the button.';
+            this.pwaStatus = 'جاهز للتثبيت دون اتصال. إذا رفضت، يمكنك القيام بذلك لاحقاً عبر الزر.';
           });
 
           if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-            this.pwaStatus = 'The application is launched in standalone mode (installed).';
+            this.pwaStatus = 'التطبيق يعمل في الوضع المستقل (مثبت).';
           } else {
-            this.pwaStatus = 'The application can be installed for offline access.';
+            this.pwaStatus = 'يمكن تثبيت التطبيق للوصول دون اتصال.';
           }
         } else {
-          this.pwaStatus = 'Service Worker not supported, offline installation is impossible.';
+          this.pwaStatus = 'خدمة Worker غير مدعومة، التثبيت دون اتصال غير ممكن.';
         }
 
         // Health prefs
@@ -1526,10 +1546,10 @@
           // A starter recipe
           const starter = {
             id: 'r_seed',
-            title: 'Light vegetable couscous',
-            ingredients: ['Semolina', 'Carrots', 'Zucchini', 'Chickpeas', 'Tomatoes', 'Onions', 'Spices (ras el hanout)', 'Olive oil', 'Salt'],
-            steps: ['Steam the semolina','Prepare the spicy broth','Cook the vegetables','Assemble and serve'],
-            tags: ['Main','Maghreb'],
+            title: 'كوسكوس خضار خفيف',
+            ingredients: ['سميد', 'جزر', 'كوسا', 'حمص', 'طماطم', 'بصل', 'توابل (رش الحنوت)', 'زيت زيتون', 'ملح'],
+            steps: ['اغمر السميد بالبخار','حضّر المرق الحار','اطهِ الخضروات','اجمع وقدم'],
+            tags: ['رئيسي','مغربي'],
             calories: 650,
             imageUrl: Pollinations.imageUrl('Photo couscous with vegetables, halal, healthy, magazine style, natural lighting', 960, 540)
           };
