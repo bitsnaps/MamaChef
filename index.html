@@ -414,6 +414,10 @@
                           <span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
                           <span>Cuisiné</span>
                         </button>
+                        <button class="button is-small is-light ml-1" @click="startCookingTimer(r)">
+                          <span class="icon has-text-warning"><i class="fa-solid fa-clock"></i></span>
+                          <span>Minuteur</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -795,6 +799,11 @@
                   <p class="card-header-title">Paramètres</p>
                 </header>
                 <div class="card-content">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input type="checkbox" v-model="cookingNotificationsEnabled" @change="saveAll()"> Activer les notifications du minuteur de cuisson
+                    </label>
+                  </div>
                   <button class="button is-link is-light" @click="installPwa()">
                     <span class="icon"><i class="fa-solid fa-download"></i></span>
                     <span>Installer l'application</span>
@@ -1027,7 +1036,11 @@
 
           // PWA Install
           deferredPrompt: null,
-          pwaStatus: ''
+          pwaStatus: '',
+          
+          // Minuteur de cuisson
+          activeTimers: [],
+          cookingNotificationsEnabled: true
         }
       },
       computed: {
@@ -1287,14 +1300,7 @@
           if (idx>=0) this.recipes[idx].imageUrl = r.imageUrl;
           this.saveAll();
         },
-        cookRecipe(r) {
-          this.stats.cooked++;
-          this.addScore(8);
-          this.saveAll();
-          this.notify('Bravo ! Recette cuisinée. +8 pts', 'is-success');
-        },
-
-        // PLANNING
+        cookRecipe(r) {\n          this.stats.cooked++;\n          this.addScore(8);\n          this.saveAll();\n          this.notify('Bravo ! Recette cuisinée. +8 pts', 'is-success');\n        },\n        \n        async startCookingTimer(recipe) {\n          // Check if notifications are enabled\n          if (!('serviceWorker' in navigator && 'PushManager' in window)) {\n            this.notify('Les notifications push ne sont pas prises en charge par votre navigateur.', 'is-warning');\n            return;\n          }\n          \n          // Request notification permission if not already granted\n          if (Notification.permission !== 'granted') {\n            const permission = await Notification.requestPermission();\n            if (permission !== 'granted') {\n              this.notify('Autorisation de notification refusée. Le minuteur utilisera uniquement des alertes dans l\'application.', 'is-warning');\n              // Fallback to in-app timer without notifications\n              this.startInAppTimer(recipe);\n              return;\n            }\n          }\n          \n          // Get cooking time from user input\n          const timeInput = prompt(`Entrez le temps de cuisson pour \"${recipe.title}\" en minutes (ex. : 30) :`);\n          if (!timeInput) return;\n          \n          const minutes = parseInt(timeInput);\n          if (isNaN(minutes) || minutes <= 0) {\n            this.notify('Veuillez entrer un temps de cuisson valide.', 'is-warning');\n            return;\n          }\n          \n          // Calculate when timer should end\n          const endTime = Date.now() + (minutes * 60 * 1000);\n          \n          // Store timer data\n          this.activeTimers = this.activeTimers || [];\n          const timerId = `timer_${Date.now()}`;\n          this.activeTimers.push({\n            id: timerId,\n            recipeId: recipe.id,\n            recipeTitle: recipe.title,\n            endTime: endTime,\n            duration: minutes * 60\n          });\n          \n          // Start the timer\n          this.notify(`Minuteur de cuisson démarré pour ${minutes} minutes !`, 'is-info');\n          \n          // Schedule notification using setTimeout\n          setTimeout(() => {\n            // Show notification that cooking is done\n            if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {\n              navigator.serviceWorker.ready.then(registration => {\n                registration.showNotification('Minuteur de cuisson MamaChef', {\n                  body: `Votre ${recipe.title} est prêt !`,\n                  icon: '/images/icon-192x192.png',\n                  badge: '/images/icon-96x96.png',\n                  tag: timerId,\n                  data: {\n                    url: window.location.origin + window.location.pathname\n                  }\n                });\n              });\n            } else {\n              // Fallback notification if service worker is not ready\n              this.notify(`Votre ${recipe.title} est prêt !`, 'is-success');\n            }\n            \n            // Remove timer from active timers\n            this.activeTimers = this.activeTimers.filter(t => t.id !== timerId);\n          }, minutes * 60 * 1000);\n        },\n        \n        startInAppTimer(recipe) {\n          // Fallback timer that works without push notifications\n          const timeInput = prompt(`Entrez le temps de cuisson pour \"${recipe.title}\" en minutes (ex. : 30) :`);\n          if (!timeInput) return;\n          \n          const minutes = parseInt(timeInput);\n          if (isNaN(minutes) || minutes <= 0) {\n            this.notify('Veuillez entrer un temps de cuisson valide.', 'is-warning');\n            return;\n          }\n          \n          // Store timer data\n          this.activeTimers = this.activeTimers || [];\n          const timerId = `timer_${Date.now()}`;\n          this.activeTimers.push({\n            id: timerId,\n            recipeId: recipe.id,\n            recipeTitle: recipe.title,\n            endTime: Date.now() + (minutes * 60 * 1000),\n            duration: minutes * 60\n          });\n          \n          this.notify(`Minuteur de cuisson démarré pour ${minutes} minutes (dans l'application uniquement) !`, 'is-info');\n          \n          // Show an in-app notification after the time is up\n          setTimeout(() => {\n            this.notify(`Votre ${recipe.title} est prêt !`, 'is-success');\n            \n            // Remove timer from active timers\n            this.activeTimers = this.activeTimers.filter(t => t.id !== timerId);\n          }, minutes * 60 * 1000);\n        },\n\n        // PLANNING
         togglePlanner(idx) {
           this.openPlannerDropdown = this.openPlannerDropdown === idx ? null : idx;
         },
