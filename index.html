@@ -414,6 +414,10 @@
                           <span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
                           <span>Cooked</span>
                         </button>
+                        <button class="button is-small is-light ml-1" @click="startCookingTimer(r)">
+                          <span class="icon has-text-warning"><i class="fa-solid fa-clock"></i></span>
+                          <span>Timer</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -795,6 +799,11 @@
                   <p class="card-header-title">Settings</p>
                 </header>
                 <div class="card-content">
+                  <div class="field">
+                    <label class="checkbox">
+                      <input type="checkbox" v-model="cookingNotificationsEnabled" @change="saveAll()"> Enable cooking timer notifications
+                    </label>
+                  </div>
                   <button class="button is-link is-light" @click="installPwa()">
                     <span class="icon"><i class="fa-solid fa-download"></i></span>
                     <span>Install the application</span>
@@ -1027,7 +1036,11 @@
 
           // PWA Install
           deferredPrompt: null,
-          pwaStatus: ''
+          pwaStatus: '',
+          
+          // Cooking Timer
+          activeTimers: [],
+          cookingNotificationsEnabled: true
         }
       },
       computed: {
@@ -1292,6 +1305,109 @@
           this.addScore(8);
           this.saveAll();
           this.notify('Well done! Recipe cooked. +8 pts', 'is-success');
+        },
+        
+        async startCookingTimer(recipe) {
+          // Check if notifications are enabled
+          if (!('serviceWorker' in navigator && 'PushManager' in window)) {
+            this.notify('Push notifications not supported in your browser.', 'is-warning');
+            return;
+          }
+          
+          // Request notification permission if not already granted
+          if (Notification.permission !== 'granted') {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+              this.notify('Notifications permission denied. Timer will use in-app alerts only.', 'is-warning');
+              // Fallback to in-app timer without notifications
+              this.startInAppTimer(recipe);
+              return;
+            }
+          }
+          
+          // Get cooking time from user input
+          const timeInput = prompt(`Enter cooking time for "${recipe.title}" in minutes (e.g., 30):`);
+          if (!timeInput) return;
+          
+          const minutes = parseInt(timeInput);
+          if (isNaN(minutes) || minutes <= 0) {
+            this.notify('Please enter a valid cooking time.', 'is-warning');
+            return;
+          }
+          
+          // Calculate when timer should end
+          const endTime = Date.now() + (minutes * 60 * 1000);
+          
+          // Store timer data
+          this.activeTimers = this.activeTimers || [];
+          const timerId = `timer_${Date.now()}`;
+          this.activeTimers.push({
+            id: timerId,
+            recipeId: recipe.id,
+            recipeTitle: recipe.title,
+            endTime: endTime,
+            duration: minutes * 60
+          });
+          
+          // Start the timer
+          this.notify(`Cooking timer started for ${minutes} minutes!`, 'is-info');
+          
+          // Schedule notification using setTimeout
+          setTimeout(() => {
+            // Show notification that cooking is done
+            if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+              navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification('MamaChef Cooking Timer', {
+                  body: `Your ${recipe.title} is ready!`,
+                  icon: '/images/icon-192x192.png',
+                  badge: '/images/icon-96x96.png',
+                  tag: timerId,
+                  data: {
+                    url: window.location.origin + window.location.pathname
+                  }
+                });
+              });
+            } else {
+              // Fallback notification if service worker is not ready
+              this.notify(`Your ${recipe.title} is ready!`, 'is-success');
+            }
+            
+            // Remove timer from active timers
+            this.activeTimers = this.activeTimers.filter(t => t.id !== timerId);
+          }, minutes * 60 * 1000);
+        },
+        
+        startInAppTimer(recipe) {
+          // Fallback timer that works without push notifications
+          const timeInput = prompt(`Enter cooking time for "${recipe.title}" in minutes (e.g., 30):`);
+          if (!timeInput) return;
+          
+          const minutes = parseInt(timeInput);
+          if (isNaN(minutes) || minutes <= 0) {
+            this.notify('Please enter a valid cooking time.', 'is-warning');
+            return;
+          }
+          
+          // Store timer data
+          this.activeTimers = this.activeTimers || [];
+          const timerId = `timer_${Date.now()}`;
+          this.activeTimers.push({
+            id: timerId,
+            recipeId: recipe.id,
+            recipeTitle: recipe.title,
+            endTime: Date.now() + (minutes * 60 * 1000),
+            duration: minutes * 60
+          });
+          
+          this.notify(`Cooking timer started for ${minutes} minutes (in-app only)!`, 'is-info');
+          
+          // Show an in-app notification after the time is up
+          setTimeout(() => {
+            this.notify(`Your ${recipe.title} is ready!`, 'is-success');
+            
+            // Remove timer from active timers
+            this.activeTimers = this.activeTimers.filter(t => t.id !== timerId);
+          }, minutes * 60 * 1000);
         },
 
         // PLANNING

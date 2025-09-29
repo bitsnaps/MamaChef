@@ -27,3 +27,36 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
+// Handle push notifications
+self.addEventListener('push', event => {
+  let data = {};
+  if (event.data) {
+    data = event.data.json();
+  }
+
+  const title = data.title || 'MamaChef Cooking Timer';
+  const options = {
+    body: data.body || 'Your cooking timer is complete!',
+    icon: '/images/icon-192x192.png',
+    badge: '/images/icon-96x96.png',
+    tag: data.tag || 'cooking-timer',
+    data: {
+      url: data.url || '/'
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Handle notification click
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  
+  // Open the app when notification is clicked
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
+});
